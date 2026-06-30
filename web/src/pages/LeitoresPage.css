@@ -1,0 +1,42 @@
+/* ================================================
+   LEITORES PAGE
+   ================================================ */
+
+.table-wrapper {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.leitor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--teal-light);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.td-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.td-email {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .data-table {
+    font-size: 0.82rem;
+  }
+  .data-table th,
+  .data-table td {
+    padding: var(--space-3);
+  }
+}

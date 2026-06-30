@@ -1,0 +1,46 @@
+/* ================================================
+   EMPRÉSTIMOS PAGE
+   ================================================ */
+
+.emprestimos-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.filter-label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.emprestimos-select {
+  width: 180px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.emp-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-sm);
+  background: var(--navy);
+  background: linear-gradient(135deg, var(--navy), var(--navy-light));
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+  .emprestimos-filters {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .emprestimos-select {
+    width: 100%;
+  }
+}
