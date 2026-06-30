@@ -1,18 +1,18 @@
 import { useState } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
-import './EmprestimosPage.css'
+import './LoansPage.css'
 
-const emprestimosMock = [
-  { id: 1, leitor: 'Loreia Editar', livro: 'Otelo', dataSaida: '25/06/2023', previsaoVolta: '03/01/2023', status: 'Em aberto' },
-  { id: 2, leitor: 'Marora Tafuora', livro: 'Lima', dataSaida: '25/06/2023', previsaoVolta: '19/01/2023', status: 'Em aberto' },
-  { id: 3, leitor: 'Marcos Editar', livro: 'Gonzales', dataSaida: '25/04/2023', previsaoVolta: '03/01/2023', status: 'Em aberto' },
-  { id: 4, leitor: 'Biakris Kossin', livro: 'Derrudes Optimus', dataSaida: '25/04/2023', previsaoVolta: '03/01/2023', status: 'Registrar Devolução' },
-  { id: 5, leitor: 'Marcos Canara', livro: 'Romanta', dataSaida: '25/06/2023', previsaoVolta: '03/01/2023', status: 'Devolvido' },
-  { id: 6, leitor: 'Lilena Moois', livro: 'Derrudes Meteórico', dataSaida: '25/06/2023', previsaoVolta: '03/01/2023', status: 'Devolvido' },
-  { id: 7, leitor: 'Diana Editar', livro: 'Derrudes Kantar', dataSaida: '25/06/2023', previsaoVolta: '03/01/2023', status: 'Devolvido' },
+const mockLoans = [
+  { id: 1, reader: 'Loreia Editar', book: 'Otelo', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Em aberto' },
+  { id: 2, reader: 'Marora Tafuora', book: 'Lima', checkoutDate: '25/06/2023', dueDate: '19/01/2023', status: 'Em aberto' },
+  { id: 3, reader: 'Marcos Editar', book: 'Gonzales', checkoutDate: '25/04/2023', dueDate: '03/01/2023', status: 'Em aberto' },
+  { id: 4, reader: 'Biakris Kossin', book: 'Derrudes Optimus', checkoutDate: '25/04/2023', dueDate: '03/01/2023', status: 'Registrar Devolução' },
+  { id: 5, reader: 'Marcos Canara', book: 'Romanta', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
+  { id: 6, reader: 'Lilena Moois', book: 'Derrudes Meteórico', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
+  { id: 7, reader: 'Diana Editar', book: 'Derrudes Kantar', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
 ]
 
-function statusBadgeClass(status) {
+function getStatusBadgeClass(status) {
   switch (status) {
     case 'Em aberto': return 'badge badge-open'
     case 'Devolvido': return 'badge badge-returned'
@@ -22,18 +22,18 @@ function statusBadgeClass(status) {
   }
 }
 
-export default function EmprestimosPage() {
-  const [busca, setBusca] = useState('')
+export default function LoansPage() {
+  const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
 
   const statuses = ['Todos', 'Em aberto', 'Devolvido', 'Atrasado', 'Registrar Devolução']
 
-  const filtrados = emprestimosMock.filter((e) => {
-    const matchBusca =
-      e.leitor.toLowerCase().includes(busca.toLowerCase()) ||
-      e.livro.toLowerCase().includes(busca.toLowerCase())
-    const matchStatus = statusFilter === 'Todos' || e.status === statusFilter
-    return matchBusca && matchStatus
+  const filteredLoans = mockLoans.filter((loan) => {
+    const matchSearch =
+      loan.reader.toLowerCase().includes(search.toLowerCase()) ||
+      loan.book.toLowerCase().includes(search.toLowerCase())
+    const matchStatus = statusFilter === 'Todos' || loan.status === statusFilter
+    return matchSearch && matchStatus
   })
 
   return (
@@ -60,8 +60,8 @@ export default function EmprestimosPage() {
             type="text"
             className="input-field"
             placeholder="Buscar Empréstimo..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
@@ -94,8 +94,8 @@ export default function EmprestimosPage() {
             </tr>
           </thead>
           <tbody>
-            {filtrados.map((emp, i) => (
-              <tr key={emp.id} className={`animate-in stagger-${i + 1}`}>
+            {filteredLoans.map((loan, i) => (
+              <tr key={loan.id} className={`animate-in stagger-${i + 1}`}>
                 <td>
                   <div className="emp-icon">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -106,13 +106,13 @@ export default function EmprestimosPage() {
                     </svg>
                   </div>
                 </td>
-                <td className="td-name">{emp.leitor}</td>
-                <td>{emp.livro}</td>
-                <td>{emp.dataSaida}</td>
-                <td>{emp.previsaoVolta}</td>
-                <td><span className={statusBadgeClass(emp.status)}>{emp.status}</span></td>
+                <td className="td-name">{loan.reader}</td>
+                <td>{loan.book}</td>
+                <td>{loan.checkoutDate}</td>
+                <td>{loan.dueDate}</td>
+                <td><span className={getStatusBadgeClass(loan.status)}>{loan.status}</span></td>
                 <td>
-                  <button className="btn-icon" aria-label={`Editar empréstimo de ${emp.leitor}`}>
+                  <button className="btn-icon" aria-label={`Editar empréstimo de ${loan.reader}`}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>

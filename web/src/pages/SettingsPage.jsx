@@ -1,22 +1,22 @@
 import { useState } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
-import './ConfiguracoesPage.css'
+import './SettingsPage.css'
 
-export default function ConfiguracoesPage() {
-  const [perfil, setPerfil] = useState({
-    nome: 'Administrador',
+export default function SettingsPage() {
+  const [profile, setProfile] = useState({
+    name: 'Administrador',
     email: 'admin@biblioteca.com',
-    cargo: 'Bibliotecário Chefe',
-    telefone: '(17) 99999-0000',
+    role: 'Bibliotecário Chefe',
+    phone: '(17) 99999-0000',
   })
 
   const [config, setConfig] = useState({
-    diasEmprestimo: 14,
-    multaDiaria: '2.50',
-    maxLivros: 5,
-    notificacoes: true,
-    notifEmail: true,
-    notifAtraso: true,
+    loanDays: 14,
+    dailyFine: '2.50',
+    maxBooks: 5,
+    notifications: true,
+    emailNotifications: true,
+    overdueAlerts: true,
     darkMode: false,
   })
 
@@ -47,8 +47,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-nome"
                 type="text"
                 className="input-field"
-                value={perfil.nome}
-                onChange={(e) => setPerfil({ ...perfil, nome: e.target.value })}
+                value={profile.name}
+                onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               />
             </div>
             <div className="config-field">
@@ -57,8 +57,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-email"
                 type="email"
                 className="input-field"
-                value={perfil.email}
-                onChange={(e) => setPerfil({ ...perfil, email: e.target.value })}
+                value={profile.email}
+                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
               />
             </div>
             <div className="config-field">
@@ -67,8 +67,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-cargo"
                 type="text"
                 className="input-field"
-                value={perfil.cargo}
-                onChange={(e) => setPerfil({ ...perfil, cargo: e.target.value })}
+                value={profile.role}
+                onChange={(e) => setProfile({ ...profile, role: e.target.value })}
               />
             </div>
             <div className="config-field">
@@ -77,8 +77,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-tel"
                 type="text"
                 className="input-field"
-                value={perfil.telefone}
-                onChange={(e) => setPerfil({ ...perfil, telefone: e.target.value })}
+                value={profile.phone}
+                onChange={(e) => setProfile({ ...profile, phone: e.target.value })}
               />
             </div>
           </div>
@@ -102,8 +102,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-dias"
                 type="number"
                 className="input-field"
-                value={config.diasEmprestimo}
-                onChange={(e) => setConfig({ ...config, diasEmprestimo: e.target.value })}
+                value={config.loanDays}
+                onChange={(e) => setConfig({ ...config, loanDays: e.target.value })}
               />
             </div>
             <div className="config-field">
@@ -112,8 +112,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-multa"
                 type="text"
                 className="input-field"
-                value={config.multaDiaria}
-                onChange={(e) => setConfig({ ...config, multaDiaria: e.target.value })}
+                value={config.dailyFine}
+                onChange={(e) => setConfig({ ...config, dailyFine: e.target.value })}
               />
             </div>
             <div className="config-field">
@@ -122,8 +122,8 @@ export default function ConfiguracoesPage() {
                 id="cfg-max"
                 type="number"
                 className="input-field"
-                value={config.maxLivros}
-                onChange={(e) => setConfig({ ...config, maxLivros: e.target.value })}
+                value={config.maxBooks}
+                onChange={(e) => setConfig({ ...config, maxBooks: e.target.value })}
               />
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function ConfiguracoesPage() {
                 <span className="config-toggle-label">Notificações do sistema</span>
                 <span className="config-toggle-desc">Receber alertas sobre atividades importantes</span>
               </div>
-              <div className={`config-switch ${config.notificacoes ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, notificacoes: !config.notificacoes })}>
+              <div className={`config-switch ${config.notifications ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, notifications: !config.notifications })}>
                 <div className="config-switch-thumb"></div>
               </div>
             </label>
@@ -153,7 +153,7 @@ export default function ConfiguracoesPage() {
                 <span className="config-toggle-label">Notificações por e-mail</span>
                 <span className="config-toggle-desc">Enviar cópia das notificações para o e-mail cadastrado</span>
               </div>
-              <div className={`config-switch ${config.notifEmail ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, notifEmail: !config.notifEmail })}>
+              <div className={`config-switch ${config.emailNotifications ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, emailNotifications: !config.emailNotifications })}>
                 <div className="config-switch-thumb"></div>
               </div>
             </label>
@@ -162,7 +162,7 @@ export default function ConfiguracoesPage() {
                 <span className="config-toggle-label">Alerta de atrasos</span>
                 <span className="config-toggle-desc">Notificar automaticamente quando empréstimos estiverem atrasados</span>
               </div>
-              <div className={`config-switch ${config.notifAtraso ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, notifAtraso: !config.notifAtraso })}>
+              <div className={`config-switch ${config.overdueAlerts ? 'config-switch--on' : ''}`} onClick={() => setConfig({ ...config, overdueAlerts: !config.overdueAlerts })}>
                 <div className="config-switch-thumb"></div>
               </div>
             </label>

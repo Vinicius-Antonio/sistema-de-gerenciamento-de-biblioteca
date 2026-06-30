@@ -5,12 +5,12 @@ import './LoginPage.css'
 export default function LoginPage() {
   const navigate = useNavigate()
   const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
+  const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    navigate('/dashboard/acervo')
+    navigate('/dashboard/books')
   }
 
   return (
@@ -93,8 +93,8 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   className="input-field"
                   placeholder="••••••••"
-                  value={senha}
-                  onChange={(e) => setSenha(e.target.value)}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
                 />
                 <button

@@ -3,7 +3,7 @@ import './Sidebar.css'
 
 const navItems = [
   {
-    path: '/dashboard/acervo',
+    path: '/dashboard/books',
     label: 'Acervo',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -15,7 +15,7 @@ const navItems = [
     ),
   },
   {
-    path: '/dashboard/leitores',
+    path: '/dashboard/readers',
     label: 'Leitores',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -27,7 +27,7 @@ const navItems = [
     ),
   },
   {
-    path: '/dashboard/emprestimos',
+    path: '/dashboard/loans',
     label: 'Empréstimos',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -39,7 +39,7 @@ const navItems = [
     ),
   },
   {
-    path: '/dashboard/relatorios',
+    path: '/dashboard/reports',
     label: 'Relatórios',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -51,7 +51,7 @@ const navItems = [
     ),
   },
   {
-    path: '/dashboard/configuracoes',
+    path: '/dashboard/settings',
     label: 'Configurações',
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">

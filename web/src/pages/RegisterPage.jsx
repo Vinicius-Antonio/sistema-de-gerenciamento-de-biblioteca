@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import './CadastroPage.css'
+import './RegisterPage.css'
 
-export default function CadastroPage() {
+export default function RegisterPage() {
   const navigate = useNavigate()
   const [form, setForm] = useState({
-    nome: '',
+    name: '',
     email: '',
-    senha: '',
-    confirmarSenha: '',
-    cargo: 'Bibliotecário',
+    password: '',
+    confirmPassword: '',
+    role: 'Bibliotecário',
   })
   const [showPassword, setShowPassword] = useState(false)
 
@@ -19,7 +19,7 @@ export default function CadastroPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    navigate('/dashboard/acervo')
+    navigate('/dashboard/books')
   }
 
   return (
@@ -77,8 +77,8 @@ export default function CadastroPage() {
                   type="text"
                   className="input-field"
                   placeholder="Seu nome completo"
-                  value={form.nome}
-                  onChange={handleChange('nome')}
+                  value={form.name}
+                  onChange={handleChange('name')}
                   autoComplete="name"
                 />
               </div>
@@ -116,8 +116,8 @@ export default function CadastroPage() {
                     type={showPassword ? 'text' : 'password'}
                     className="input-field"
                     placeholder="••••••••"
-                    value={form.senha}
-                    onChange={handleChange('senha')}
+                    value={form.password}
+                    onChange={handleChange('password')}
                     autoComplete="new-password"
                   />
                 </div>
@@ -135,8 +135,8 @@ export default function CadastroPage() {
                     type={showPassword ? 'text' : 'password'}
                     className="input-field"
                     placeholder="••••••••"
-                    value={form.confirmarSenha}
-                    onChange={handleChange('confirmarSenha')}
+                    value={form.confirmPassword}
+                    onChange={handleChange('confirmPassword')}
                     autoComplete="new-password"
                   />
                 </div>
@@ -148,8 +148,8 @@ export default function CadastroPage() {
               <select
                 id="cad-cargo"
                 className="input-field"
-                value={form.cargo}
-                onChange={handleChange('cargo')}
+                value={form.role}
+                onChange={handleChange('role')}
               >
                 <option value="Bibliotecário">Bibliotecário</option>
                 <option value="Auxiliar">Auxiliar de Biblioteca</option>

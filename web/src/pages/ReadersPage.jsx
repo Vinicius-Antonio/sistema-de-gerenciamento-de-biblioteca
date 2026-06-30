@@ -1,29 +1,29 @@
 import { useState } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
-import './LeitoresPage.css'
+import './ReadersPage.css'
 
-const leitoresMock = [
-  { id: 1, nome: 'Dosia Kara', cpfRa: '9/05/2027', email: 'ema@alpha.com', telefone: '17-873856', status: 'Ativo' },
-  { id: 2, nome: 'Maria Gatto', cpfRa: '9/09/2025', email: 'ema@alpha.com', telefone: '17-878897', status: 'Ativo' },
-  { id: 3, nome: 'Carla Ferrer', cpfRa: '9/05/2027', email: 'emoalpha.com', telefone: '17-878931', status: 'Ativo' },
-  { id: 4, nome: 'Elisa Maris', cpfRa: '9/05/2023', email: 'ema@alpha.com', telefone: '17-878647', status: 'Ativo' },
-  { id: 5, nome: 'Karol Narcour', cpfRa: '9/06/2023', email: 'ema@alpha.com', telefone: '17-873293', status: 'Inativo' },
-  { id: 6, nome: 'Jemies Denos', cpfRa: '9/05/2027', email: 'ema@alpha.com', telefone: '17-878866', status: 'Ativo' },
-  { id: 7, nome: 'Joares Milner', cpfRa: '9/06/2028', email: 'ema@alpha.com', telefone: '17-878300', status: 'Inativo' },
+const mockReaders = [
+  { id: 1, name: 'Dosia Kara', cpfRa: '9/05/2027', email: 'ema@alpha.com', phone: '17-873856', status: 'Ativo' },
+  { id: 2, name: 'Maria Gatto', cpfRa: '9/09/2025', email: 'ema@alpha.com', phone: '17-878897', status: 'Ativo' },
+  { id: 3, name: 'Carla Ferrer', cpfRa: '9/05/2027', email: 'emoalpha.com', phone: '17-878931', status: 'Ativo' },
+  { id: 4, name: 'Elisa Maris', cpfRa: '9/05/2023', email: 'ema@alpha.com', phone: '17-878647', status: 'Ativo' },
+  { id: 5, name: 'Karol Narcour', cpfRa: '9/06/2023', email: 'ema@alpha.com', phone: '17-873293', status: 'Inativo' },
+  { id: 6, name: 'Jemies Denos', cpfRa: '9/05/2027', email: 'ema@alpha.com', phone: '17-878866', status: 'Ativo' },
+  { id: 7, name: 'Joares Milner', cpfRa: '9/06/2028', email: 'ema@alpha.com', phone: '17-878300', status: 'Inativo' },
 ]
 
-function statusBadgeClass(status) {
+function getStatusBadgeClass(status) {
   return status === 'Ativo' ? 'badge badge-active' : 'badge badge-inactive'
 }
 
-export default function LeitoresPage() {
-  const [busca, setBusca] = useState('')
+export default function ReadersPage() {
+  const [search, setSearch] = useState('')
 
-  const filtrados = leitoresMock.filter(
-    (l) =>
-      l.nome.toLowerCase().includes(busca.toLowerCase()) ||
-      l.cpfRa.includes(busca) ||
-      l.email.toLowerCase().includes(busca.toLowerCase())
+  const filteredReaders = mockReaders.filter(
+    (reader) =>
+      reader.name.toLowerCase().includes(search.toLowerCase()) ||
+      reader.cpfRa.includes(search) ||
+      reader.email.toLowerCase().includes(search.toLowerCase())
   )
 
   return (
@@ -50,8 +50,8 @@ export default function LeitoresPage() {
             type="text"
             className="input-field"
             placeholder="Buscar por Nome, CPF ou RA..."
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
@@ -71,8 +71,8 @@ export default function LeitoresPage() {
             </tr>
           </thead>
           <tbody>
-            {filtrados.map((leitor, i) => (
-              <tr key={leitor.id} className={`animate-in stagger-${i + 1}`}>
+            {filteredReaders.map((reader, i) => (
+              <tr key={reader.id} className={`animate-in stagger-${i + 1}`}>
                 <td>
                   <div className="leitor-avatar">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -81,13 +81,13 @@ export default function LeitoresPage() {
                     </svg>
                   </div>
                 </td>
-                <td className="td-name">{leitor.nome}</td>
-                <td>{leitor.cpfRa}</td>
-                <td className="td-email">{leitor.email}</td>
-                <td>{leitor.telefone}</td>
-                <td><span className={statusBadgeClass(leitor.status)}>{leitor.status}</span></td>
+                <td className="td-name">{reader.name}</td>
+                <td>{reader.cpfRa}</td>
+                <td className="td-email">{reader.email}</td>
+                <td>{reader.phone}</td>
+                <td><span className={getStatusBadgeClass(reader.status)}>{reader.status}</span></td>
                 <td>
-                  <button className="btn-icon" aria-label={`Editar ${leitor.nome}`}>
+                  <button className="btn-icon" aria-label={`Editar ${reader.name}`}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
