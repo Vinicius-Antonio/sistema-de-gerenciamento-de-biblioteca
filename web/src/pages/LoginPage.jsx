@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../services/api'
 import './LoginPage.css'
 
 export default function LoginPage() {
@@ -7,10 +8,22 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/dashboard/books')
+    setError(null)
+    setLoading(true)
+    try {
+      const response = await api.post('/users/login', { email, password })
+      localStorage.setItem('user', JSON.stringify(response.user))
+      navigate('/dashboard/books')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -60,6 +73,8 @@ export default function LoginPage() {
               <p className="login-form-brand-sub">Acesso ao Sistema</p>
             </div>
           </div>
+
+          {error && <div className="login-error" style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">
@@ -120,8 +135,8 @@ export default function LoginPage() {
             </div>
 
             <div className="login-actions">
-              <button type="submit" className="btn btn-primary btn-lg login-submit">
-                Entrar
+              <button type="submit" className="btn btn-primary btn-lg login-submit" disabled={loading}>
+                {loading ? 'Entrando...' : 'Entrar'}
               </button>
               <a href="#" className="login-forgot">Esqueci minha senha</a>
               <p className="login-register-link">

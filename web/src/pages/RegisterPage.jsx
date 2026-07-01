@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { api } from '../services/api'
 import './RegisterPage.css'
 
 export default function RegisterPage() {
@@ -9,17 +10,40 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Bibliotecário',
+    role: 'LIBRARIAN',
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState(null)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value })
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/dashboard/books')
+    setError(null)
+    
+    if (form.password !== form.confirmPassword) {
+      setError('As senhas não coincidem')
+      return
+    }
+    
+    setLoading(true)
+    try {
+      const response = await api.post('/users', {
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role
+      })
+      localStorage.setItem('user', JSON.stringify(response))
+      navigate('/dashboard/books')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -63,6 +87,8 @@ export default function RegisterPage() {
               <p className="cadastro-form-brand-sub">Criar Nova Conta</p>
             </div>
           </div>
+
+          {error && <div className="cadastro-error" style={{ color: 'red', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
 
           <form className="cadastro-form" onSubmit={handleSubmit}>
             <div className="cadastro-field">
@@ -151,9 +177,9 @@ export default function RegisterPage() {
                 value={form.role}
                 onChange={handleChange('role')}
               >
-                <option value="Bibliotecário">Bibliotecário</option>
-                <option value="Auxiliar">Auxiliar de Biblioteca</option>
-                <option value="Administrador">Administrador</option>
+                <option value="LIBRARIAN">Bibliotecário</option>
+                <option value="READER">Leitor</option>
+                <option value="ADMIN">Administrador</option>
               </select>
             </div>
 
@@ -163,8 +189,8 @@ export default function RegisterPage() {
             </label>
 
             <div className="cadastro-actions">
-              <button type="submit" className="btn btn-primary btn-lg cadastro-submit">
-                Criar Conta
+              <button type="submit" className="btn btn-primary btn-lg cadastro-submit" disabled={loading}>
+                {loading ? 'Criando...' : 'Criar Conta'}
               </button>
               <p className="cadastro-login-link">
                 Já tem uma conta? <Link to="/login">Fazer Login</Link>

@@ -1,37 +1,74 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import { api } from '../services/api'
 import './BooksPage.css'
 
-const mockBooks = [
-  { id: 1, title: 'Orgulho e Preconceito', author: 'Jane Austen', category: 'Romance', status: 'Disponível', color: '#2D5A7B' },
-  { id: 2, title: 'Cem Anos de Solidão', author: 'Gabriel García Márquez', category: 'Ficção', status: 'Emprestado', color: '#8B4513' },
-  { id: 3, title: 'A Forma da Água', author: 'Guillermo del Toro', category: 'Fantasia', status: 'Disponível', color: '#1B6B4F' },
-  { id: 4, title: 'O Cortiço', author: 'Aluísio Azevedo', category: 'Literatura Brasileira', status: 'Disponível', color: '#6B3A5D' },
-  { id: 5, title: 'Desencantadas do Mundo', author: 'Autor Brasileiro', category: 'Ficção', status: 'Indisponível', color: '#4A4A6A' },
-  { id: 6, title: 'Democracia Sócio-Brasileira', author: 'Autor Brasileiro', category: 'Sociologia', status: 'Emprestado', color: '#2A4858' },
-  { id: 7, title: 'A Hermenêutica do Direito', author: 'Autor Brasileiro', category: 'Direito', status: 'Disponível', color: '#5A3D2B' },
-  { id: 8, title: 'Conhecimento do Barroco', author: 'Autor Brasileiro', category: 'História', status: 'Disponível', color: '#3D5A80' },
-  { id: 9, title: 'Ciência e Inovação', author: 'Autor Brasileiro', category: 'Ciências', status: 'Indisponível', color: '#6D4C7D' },
-]
-
 const categories = ['Todas', 'Romance', 'Ficção', 'Fantasia', 'Literatura Brasileira', 'Sociologia', 'Direito', 'História', 'Ciências']
-const availabilities = ['Todas', 'Disponível', 'Emprestado', 'Indisponível']
+const availabilities = ['Todas', 'AVAILABLE', 'UNAVAILABLE']
 
 function getStatusBadgeClass(status) {
   switch (status) {
-    case 'Disponível': return 'badge badge-available'
-    case 'Emprestado': return 'badge badge-borrowed'
-    case 'Indisponível': return 'badge badge-unavailable'
+    case 'AVAILABLE': return 'badge badge-available'
+    case 'UNAVAILABLE': return 'badge badge-unavailable'
     default: return 'badge'
   }
+}
+
+function getColor(id) {
+  const colors = ['#2D5A7B', '#8B4513', '#1B6B4F', '#6B3A5D', '#4A4A6A', '#2A4858', '#5A3D2B', '#3D5A80', '#6D4C7D']
+  return colors[(id || 0) % colors.length]
 }
 
 export default function BooksPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todas')
   const [availability, setAvailability] = useState('Todas')
+  
+  const [books, setBooks] = useState([])
+  const [loading, setLoading] = useState(true)
+  
+  const [showModal, setShowModal] = useState(false)
+  const [newBook, setNewBook] = useState({ title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 })
 
-  const filteredBooks = mockBooks.filter((book) => {
+  const fetchBooks = async () => {
+    try {
+      setLoading(true)
+      const data = await api.get('/books')
+      setBooks(data)
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchBooks()
+  }, [])
+
+  const handleCreate = async (e) => {
+    e.preventDefault()
+    try {
+      await api.post('/books', newBook)
+      setShowModal(false)
+      fetchBooks()
+      setNewBook({ title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 })
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Tem certeza?')) return
+    try {
+      await api.delete(`/books/${id}`)
+      fetchBooks()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const filteredBooks = books.filter((book) => {
     const matchSearch = book.title.toLowerCase().includes(search.toLowerCase()) ||
       book.author.toLowerCase().includes(search.toLowerCase())
     const matchCategory = category === 'Todas' || book.category === category
@@ -43,7 +80,7 @@ export default function BooksPage() {
     <DashboardLayout
       title="Acervo"
       actions={
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -52,7 +89,6 @@ export default function BooksPage() {
         </button>
       }
     >
-      {/* Toolbar */}
       <div className="toolbar">
         <div className="search-wrapper">
           <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -87,28 +123,55 @@ export default function BooksPage() {
         </select>
       </div>
 
-      {/* Book Grid */}
-      <div className="acervo-grid">
-        {filteredBooks.map((book, i) => (
-          <div key={book.id} className={`acervo-card card animate-in stagger-${i + 1}`}>
-            <div className="acervo-cover" style={{ background: `linear-gradient(160deg, ${book.color}, ${book.color}cc)` }}>
-              <div className="acervo-cover-spine"></div>
-              <div className="acervo-cover-lines">
-                <div className="acervo-cover-line" style={{ width: '70%' }}></div>
-                <div className="acervo-cover-line" style={{ width: '50%' }}></div>
-                <div className="acervo-cover-line" style={{ width: '60%' }}></div>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '2rem' }}>Carregando livros...</div>
+      ) : (
+        <div className="acervo-grid">
+          {filteredBooks.map((book, i) => (
+            <div key={book.id} className={`acervo-card card animate-in stagger-${(i % 5) + 1}`}>
+              <div className="acervo-cover" style={{ background: `linear-gradient(160deg, ${getColor(book.id)}, ${getColor(book.id)}cc)` }}>
+                <div className="acervo-cover-spine"></div>
+                <div className="acervo-cover-lines">
+                  <div className="acervo-cover-line" style={{ width: '70%' }}></div>
+                  <div className="acervo-cover-line" style={{ width: '50%' }}></div>
+                  <div className="acervo-cover-line" style={{ width: '60%' }}></div>
+                </div>
+                <span className="acervo-cover-title">{book.title}</span>
+                <span className="acervo-cover-author">{book.author}</span>
               </div>
-              <span className="acervo-cover-title">{book.title}</span>
-              <span className="acervo-cover-author">{book.author}</span>
+              <div className="acervo-info">
+                <h4 className="acervo-title">{book.title}</h4>
+                <p className="acervo-author">{book.author}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
+                  <span className={getStatusBadgeClass(book.status)}>{book.status === 'AVAILABLE' ? 'Disponível' : 'Indisponível'}</span>
+                  <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
+                </div>
+              </div>
             </div>
-            <div className="acervo-info">
-              <h4 className="acervo-title">{book.title}</h4>
-              <p className="acervo-author">{book.author}</p>
-              <span className={getStatusBadgeClass(book.status)}>{book.status}</span>
-            </div>
+          ))}
+        </div>
+      )}
+
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '400px', maxWidth: '90%', padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Novo Livro</h3>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <input required className="input-field" placeholder="Título" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} />
+              <input required className="input-field" placeholder="Autor" value={newBook.author} onChange={e => setNewBook({...newBook, author: e.target.value})} />
+              <select className="input-field" value={newBook.category} onChange={e => setNewBook({...newBook, category: e.target.value})}>
+                {categories.filter(c => c !== 'Todas').map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <input type="number" required className="input-field" placeholder="Quantidade" value={newBook.totalQuantity} onChange={e => setNewBook({...newBook, totalQuantity: parseInt(e.target.value)})} />
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" className="btn" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Salvar</button>
+              </div>
+            </form>
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }
+

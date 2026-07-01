@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import './Sidebar.css'
 
 const navItems = [
@@ -64,6 +65,17 @@ const navItems = [
 
 export default function Sidebar() {
   const location = useLocation()
+  
+  const [user, setUser] = useState({ name: 'Carregando...', role: '' })
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user')
+    if (userStr) {
+      setUser(JSON.parse(userStr))
+    } else {
+      setUser({ name: 'Visitante', role: 'Sem login' })
+    }
+  }, [])
 
   return (
     <aside className="sidebar" role="navigation" aria-label="Navegação principal">
@@ -110,8 +122,8 @@ export default function Sidebar() {
             </svg>
           </div>
           <div className="sidebar-user-info">
-            <span className="sidebar-user-name">Administrador</span>
-            <span className="sidebar-user-role">Bibliotecário</span>
+            <span className="sidebar-user-name">{user.name}</span>
+            <span className="sidebar-user-role">{user.role}</span>
           </div>
         </div>
       </div>
