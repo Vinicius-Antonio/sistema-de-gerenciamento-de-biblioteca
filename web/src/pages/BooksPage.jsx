@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import ConfirmModal from '../components/ConfirmModal'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './BooksPage.css'
@@ -48,6 +49,11 @@ export default function BooksPage() {
 
   const [borrowingId, setBorrowingId] = useState(null)
   const [feedback, setFeedback] = useState(null)
+
+  const [showBorrowModal, setShowBorrowModal] = useState(false)
+  const [bookToBorrow, setBookToBorrow] = useState(null)
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   const fetchBooks = async () => {
     try {
@@ -100,27 +106,41 @@ export default function BooksPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza?')) return
+  const handleDeleteClick = (id) => {
+    setConfirmDeleteId(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return
     try {
-      await api.delete(`/books/${id}`)
+      await api.delete(`/books/${confirmDeleteId}`)
       fetchBooks()
     } catch (err) {
       alert(err.message)
+    } finally {
+      setConfirmDeleteId(null)
     }
   }
 
-  const handleBorrow = async (book) => {
+  const openBorrowModal = (book) => {
+    setBookToBorrow(book)
+    setShowBorrowModal(true)
+  }
+
+  const confirmBorrow = async () => {
+    if (!bookToBorrow) return
     setFeedback(null)
-    setBorrowingId(book.id)
+    setBorrowingId(bookToBorrow.id)
+    setShowBorrowModal(false)
     try {
-      await api.post('/loans', { bookId: book.id, dueDate: defaultDueDate() })
-      setFeedback({ type: 'success', message: `"${book.title}" emprestado com sucesso! Prazo de devolução: 14 dias.` })
+      await api.post('/loans', { bookId: bookToBorrow.id, dueDate: defaultDueDate() })
+      setFeedback({ type: 'success', message: `"${bookToBorrow.title}" emprestado com sucesso! Prazo de devolução: 14 dias.` })
       fetchBooks()
     } catch (err) {
       setFeedback({ type: 'error', message: err.message })
     } finally {
       setBorrowingId(null)
+      setBookToBorrow(null)
     }
   }
 
@@ -214,7 +234,7 @@ export default function BooksPage() {
                 {!isReader && (
                   <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.6rem' }}>
                     <button className="btn" style={{ padding: '0.25rem 0.5rem', background: 'rgba(14,165,233,0.1)', color: '#0284c7' }} onClick={() => openEdit(book)}>Editar</button>
-                    <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
+                    <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDeleteClick(book.id)}>Excluir</button>
                   </div>
                 )}
 
@@ -223,7 +243,7 @@ export default function BooksPage() {
                     className="btn btn-primary"
                     style={{ width: '100%', justifyContent: 'center', marginTop: '0.6rem', padding: '0.4rem' }}
                     disabled={book.availableQuantity <= 0 || borrowingId === book.id}
-                    onClick={() => handleBorrow(book)}
+                    onClick={() => openBorrowModal(book)}
                   >
                     {borrowingId === book.id ? 'Emprestando...' : book.availableQuantity > 0 ? 'Pegar Emprestado' : 'Indisponível'}
                   </button>
@@ -265,6 +285,34 @@ export default function BooksPage() {
           </div>
         </div>
       )}
+
+      {showBorrowModal && bookToBorrow && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowBorrowModal(false) }}>
+          <div className="card modal-card" style={{ maxWidth: '400px' }}>
+            <h3 className="modal-title">Confirmar Empréstimo</h3>
+            <p style={{ marginTop: '1rem', marginBottom: '0.5rem', color: 'var(--text-muted)' }}>
+              Deseja realmente pegar emprestado o livro <strong style={{ color: 'var(--text)' }}>"{bookToBorrow.title}"</strong>?
+            </p>
+            <p style={{ marginBottom: '2rem', fontSize: '0.9rem', color: 'var(--navy)' }}>
+              Você terá <strong>14 dias</strong> para devolvê-lo.
+            </p>
+            <div className="modal-actions">
+              <button className="btn" onClick={() => setShowBorrowModal(false)}>Cancelar</button>
+              <button className="btn btn-primary" onClick={confirmBorrow}>Confirmar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Excluir Livro"
+        message="Tem certeza que deseja excluir este livro do acervo?"
+        confirmText="Excluir"
+        isDanger={true}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </DashboardLayout>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import ConfirmModal from '../components/ConfirmModal'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './LoansPage.css'
@@ -35,6 +36,8 @@ export default function LoansPage() {
 
   const [showModal, setShowModal] = useState(false)
   const [newLoan, setNewLoan] = useState({ readerId: '', bookId: '', dueDate: '' })
+
+  const [confirmReturnId, setConfirmReturnId] = useState(null)
 
   const fetchAll = async () => {
     try {
@@ -74,13 +77,19 @@ export default function LoansPage() {
     }
   }
 
-  const handleReturn = async (id) => {
-    if (!window.confirm('Confirmar devolução?')) return
+  const handleReturnClick = (id) => {
+    setConfirmReturnId(id)
+  }
+
+  const confirmReturn = async () => {
+    if (!confirmReturnId) return
     try {
-      await api.patch(`/loans/${id}/return`)
+      await api.patch(`/loans/${confirmReturnId}/return`)
       fetchAll()
     } catch (err) {
       alert(err.message)
+    } finally {
+      setConfirmReturnId(null)
     }
   }
 
@@ -172,8 +181,8 @@ export default function LoansPage() {
                   <td>{new Date(loan.dueDate).toLocaleDateString()}</td>
                   <td><span className={getStatusBadgeClass(loan.status)}>{getStatusLabel(loan.status)}</span></td>
                   <td>
-                    {!isReader && loan.status !== 'RETURNED' ? (
-                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#dcfce7', color: '#166534', fontSize: '0.8rem' }} onClick={() => handleReturn(loan.id)}>
+                    {loan.status !== 'RETURNED' ? (
+                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#dcfce7', color: '#166534', fontSize: '0.8rem' }} onClick={() => handleReturnClick(loan.id)}>
                         Devolver
                       </button>
                     ) : loan.status === 'RETURNED' ? (
@@ -210,6 +219,16 @@ export default function LoansPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmReturnId}
+        title="Confirmar Devolução"
+        message="Deseja registrar a devolução deste livro?"
+        confirmText="Devolver"
+        isDanger={false}
+        onConfirm={confirmReturn}
+        onCancel={() => setConfirmReturnId(null)}
+      />
     </DashboardLayout>
   )
 }

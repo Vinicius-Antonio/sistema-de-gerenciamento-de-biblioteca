@@ -94,6 +94,19 @@ export async function createLoan(req, res) {
     if (!book) throw new HttpError(404, 'Livro não encontrado')
     if (book.availableQuantity <= 0) throw new HttpError(400, 'Não há exemplares disponíveis deste livro')
 
+    const activeLoan = await Loan.findOne({
+      where: {
+        readerId,
+        bookId,
+        status: { [Op.in]: ['OPEN', 'LATE'] }
+      },
+      transaction: t
+    })
+
+    if (activeLoan) {
+      throw new HttpError(400, 'Este leitor já possui um empréstimo ativo deste mesmo livro')
+    }
+
     book.availableQuantity -= 1
     if (book.availableQuantity === 0) book.status = 'UNAVAILABLE'
     await book.save({ transaction: t })
@@ -117,6 +130,14 @@ export async function returnLoan(req, res) {
   const loan = await sequelize.transaction(async (t) => {
     const loan = await Loan.findByPk(req.params.id, { transaction: t })
     if (!loan) throw new HttpError(404, 'Empréstimo não encontrado')
+    
+    if (req.userRole === 'READER') {
+      const myReader = await Reader.findOne({ where: { userId: req.userId }, transaction: t })
+      if (!myReader || loan.readerId !== myReader.id) {
+        throw new HttpError(403, 'Você só pode devolver seus próprios empréstimos')
+      }
+    }
+
     if (loan.status === 'RETURNED') throw new HttpError(400, 'Este empréstimo já foi devolvido')
 
     loan.returnDate = new Date()

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import ConfirmModal from '../components/ConfirmModal'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './ReadersPage.css'
@@ -19,6 +20,8 @@ export default function ReadersPage() {
   const [showModal, setShowModal] = useState(false)
   const [editingReader, setEditingReader] = useState(null)
   const [form, setForm] = useState(emptyReader)
+
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null)
 
   const fetchReaders = async () => {
     try {
@@ -70,13 +73,19 @@ export default function ReadersPage() {
     }
   }
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Tem certeza?')) return
+  const handleDeleteClick = (id) => {
+    setConfirmDeleteId(id)
+  }
+
+  const confirmDelete = async () => {
+    if (!confirmDeleteId) return
     try {
-      await api.delete(`/readers/${id}`)
+      await api.delete(`/readers/${confirmDeleteId}`)
       fetchReaders()
     } catch (err) {
       alert(err.message)
+    } finally {
+      setConfirmDeleteId(null)
     }
   }
 
@@ -157,7 +166,7 @@ export default function ReadersPage() {
                         </svg>
                       </button>
                       {isAdmin && (
-                        <button className="btn-icon-delete" aria-label="Excluir" onClick={() => handleDelete(reader.id)}>
+                        <button className="btn-icon-delete" aria-label="Excluir" onClick={() => handleDeleteClick(reader.id)}>
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <polyline points="3 6 5 6 21 6"/>
                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -215,6 +224,16 @@ export default function ReadersPage() {
           </div>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!confirmDeleteId}
+        title="Excluir Leitor"
+        message="Tem certeza que deseja excluir este leitor do sistema?"
+        confirmText="Excluir"
+        isDanger={true}
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmDeleteId(null)}
+      />
     </DashboardLayout>
   )
 }

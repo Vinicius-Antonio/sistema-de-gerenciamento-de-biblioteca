@@ -167,9 +167,14 @@ export default function LoginPage() {
                   'Entrar'
                 )}
               </button>
-              <p className="login-register-link">
-                Não tem uma conta? <Link to="/cadastro">Criar conta</Link>
-              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '1rem' }}>
+                <Link to="/forgot-password" style={{ fontSize: '0.85rem', color: 'var(--teal)', textAlign: 'center', textDecoration: 'none' }}>
+                  Esqueceu sua senha?
+                </Link>
+                <p className="login-register-link" style={{ marginTop: '0' }}>
+                  Não tem uma conta? <Link to="/cadastro">Criar conta</Link>
+                </p>
+              </div>
             </div>
           </form>
 

@@ -44,7 +44,7 @@ export default function RegisterPage() {
       return
     }
 
-    if (form.role === 'READER' && !form.documentId.trim()) {
+    if (!form.documentId.trim()) {
       setError('CPF ou RA é obrigatório para leitores.')
       return
     }
@@ -165,23 +165,9 @@ export default function RegisterPage() {
               </div>
             </div>
 
-            <div className="cadastro-field">
-              <label htmlFor="cad-cargo" className="cadastro-label">Perfil</label>
-              <select
-                id="cad-cargo"
-                className="input-field"
-                value={form.role}
-                onChange={handleChange('role')}
-                disabled={isLoading}
-              >
-                <option value="READER">Leitor / Aluno</option>
-                <option value="LIBRARIAN">Bibliotecário</option>
-                <option value="ADMIN">Administrador</option>
-              </select>
-            </div>
 
-            {form.role === 'READER' && (
-              <div className="cadastro-field animate-in">
+
+            <div className="cadastro-field animate-in">
                 <label htmlFor="cad-document" className="cadastro-label">CPF ou RA</label>
                 <div className="cadastro-input-wrapper">
                   <svg className="cadastro-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -201,10 +187,9 @@ export default function RegisterPage() {
                   />
                 </div>
               </div>
-            )}
 
-            {form.role === 'READER' && (
-              <div className="cadastro-row animate-in">
+
+            <div className="cadastro-row animate-in">
                 <div className="cadastro-field">
                   <label htmlFor="cad-phone" className="cadastro-label">Telefone</label>
                   <div className="cadastro-input-wrapper">
@@ -241,7 +226,7 @@ export default function RegisterPage() {
                   </div>
                 </div>
               </div>
-            )}
+
 
             <div className="cadastro-row">
               <div className="cadastro-field">

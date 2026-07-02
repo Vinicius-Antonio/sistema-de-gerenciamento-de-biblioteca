@@ -38,6 +38,16 @@ export default (sequelize, DataTypes) => {
         type: DataTypes.ENUM('ADMIN', 'LIBRARIAN', 'READER'),
         allowNull: false,
       },
+      resetPasswordToken: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        field: 'reset_password_token',
+      },
+      resetPasswordExpires: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        field: 'reset_password_expires',
+      },
     },
     {
       sequelize,

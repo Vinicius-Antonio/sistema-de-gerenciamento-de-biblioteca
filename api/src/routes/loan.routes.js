@@ -131,7 +131,7 @@ router.post('/', asyncHandler(createLoan))
  *       404:
  *         description: Empréstimo não encontrado
  */
-router.patch('/:id/return', isLibrarianOrAdmin, asyncHandler(returnLoan))
+router.patch('/:id/return', asyncHandler(returnLoan))
 
 /**
  * @swagger
