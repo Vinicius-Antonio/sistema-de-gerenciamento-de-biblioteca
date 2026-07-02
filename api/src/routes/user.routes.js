@@ -1,18 +1,16 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
-import { verifyToken, isAdmin } from '../middleware/auth.js'
+import { verifyToken, isAdmin } from '../middlewares/auth.js'
 import {
   listUsers,
   getUser,
   createUser,
   updateUser,
   deleteUser,
-  login,
 } from '../controllers/user.controller.js'
 
 const router = Router()
 
-// All user management routes require authentication + Admin role
 router.use(verifyToken)
 router.use(isAdmin)
 
@@ -67,7 +65,7 @@ router.get('/:id', asyncHandler(getUser))
  * @swagger
  * /users:
  *   post:
- *     summary: Cadastra um novo usuário (senha armazenada co mhash)
+ *     summary: Cadastra um novo usuário (senha armazenada com hash)
  *     tags: [Usuários]
  *     requestBody:
  *       required: true
@@ -89,34 +87,9 @@ router.post('/', asyncHandler(createUser))
 
 /**
  * @swagger
- * /users/login:
- *   post:
- *     summary: Faz o login simplificado do usuário
- *     tags: [Usuários]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: Login bem sucedido
- *       401:
- *         description: Credenciais inválidas
- */
-router.post('/login', asyncHandler(login))
-
-/**
- * @swagger
  * /users/{id}:
  *   put:
- *     summary: Atualiza um usuário 
+ *     summary: Atualiza um usuário
  *     tags: [Usuários]
  *     parameters:
  *       - in: path

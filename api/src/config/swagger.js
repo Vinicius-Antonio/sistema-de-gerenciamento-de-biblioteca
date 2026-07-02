@@ -1,13 +1,12 @@
 import swaggerJSDoc from 'swagger-jsdoc'
 
-
 const swaggerDefinition = {
   openapi: '3.0.0',
   info: {
     title: 'API - Sistema de Gerenciamento de Biblioteca',
     version: '1.0.0',
     description:
-      'API REST para gerenciamento de livros, leitores e empréstimos de uma biblioteca. ' 
+      'API REST para gerenciamento de livros, leitores e empréstimos de uma biblioteca.',
   },
   servers: [
     {

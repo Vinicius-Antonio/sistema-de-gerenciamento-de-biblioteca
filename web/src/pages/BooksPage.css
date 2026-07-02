@@ -121,3 +121,24 @@
     width: 100%;
   }
 }
+
+/* --- Borrow feedback --- */
+.acervo-feedback {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: var(--space-5);
+}
+
+.acervo-feedback--success {
+  background: var(--green-light);
+  color: var(--green);
+  border: 1px solid rgba(45, 156, 111, 0.25);
+}
+
+.acervo-feedback--error {
+  background: var(--coral-light);
+  color: var(--coral);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+}

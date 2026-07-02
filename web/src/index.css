@@ -33,6 +33,7 @@
   /* Neutrals */
   --surface: #F7F8FA;
   --white: #FFFFFF;
+  --bg-card: #FFFFFF;
   --border: #E2E5EB;
   --border-light: #EEF0F4;
   --text-primary: #1B2A4A;
@@ -397,4 +398,135 @@ a:hover {
 @media (max-width: 768px) {
   h1 { font-size: 2rem; }
   h2 { font-size: 1.4rem; }
+}
+
+/* ================================================
+   Shared components (used across multiple pages —
+   kept here so they're always loaded regardless of
+   which page the person visits first)
+   ================================================ */
+
+.table-wrapper {
+  overflow-x: auto;
+  padding: 0;
+}
+
+.leitor-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--teal-light);
+  color: var(--teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.td-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.td-email {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+
+.btn-icon-edit,
+.btn-icon-delete {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.btn-icon-edit {
+  background: rgba(14, 165, 233, 0.1);
+  color: #0284c7;
+}
+.btn-icon-edit:hover {
+  background: rgba(14, 165, 233, 0.2);
+}
+
+.btn-icon-delete {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.btn-icon-delete:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-card {
+  width: 480px;
+  max-width: 92%;
+  padding: var(--space-7);
+  animation: modalSlideUp 0.25s ease;
+}
+
+@keyframes modalSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.modal-title {
+  margin-bottom: var(--space-6);
+  color: var(--navy);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.modal-form label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-1);
+  display: block;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+
+.modal-actions .btn {
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .data-table {
+    font-size: 0.82rem;
+  }
+  .data-table th,
+  .data-table td {
+    padding: var(--space-3);
+  }
 }

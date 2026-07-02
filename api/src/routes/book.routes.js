@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
-import { verifyToken, isLibrarianOrAdmin, isAdmin } from '../middleware/auth.js'
+import { verifyToken, isLibrarianOrAdmin, isAdmin } from '../middlewares/auth.js'
 import {
   listBooks,
   getBook,
@@ -11,7 +11,6 @@ import {
 
 const router = Router()
 
-// All book routes require authentication
 router.use(verifyToken)
 
 /**
