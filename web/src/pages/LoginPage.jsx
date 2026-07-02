@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, Navigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './LoginPage.css'
 
@@ -13,8 +13,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
 
   if (isAuthenticated) {
-    navigate('/dashboard/books', { replace: true })
-    return null
+    return <Navigate to="/dashboard/books" replace />
   }
 
   const handleSubmit = async (e) => {

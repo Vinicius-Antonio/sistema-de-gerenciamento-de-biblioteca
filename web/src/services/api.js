@@ -3,10 +3,16 @@ const API_URL = 'http://localhost:3000/api';
 async function request(endpoint, options = {}) {
   const url = `${API_URL}${endpoint}`;
   
+  const token = localStorage.getItem('biblioteca_token');
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
 
   const config = {
     ...options,

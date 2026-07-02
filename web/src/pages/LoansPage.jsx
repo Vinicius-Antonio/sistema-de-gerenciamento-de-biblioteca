@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './LoansPage.css'
 
@@ -22,6 +23,7 @@ function getStatusLabel(status) {
 }
 
 export default function LoansPage() {
+  const { isReader } = useAuth()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
   const statuses = ['Todos', 'OPEN', 'RETURNED', 'LATE']
@@ -37,14 +39,18 @@ export default function LoansPage() {
   const fetchAll = async () => {
     try {
       setLoading(true)
-      const [loansData, booksData, readersData] = await Promise.all([
-        api.get('/loans'),
-        api.get('/books'),
-        api.get('/readers')
-      ])
+      const loansData = await api.get('/loans')
       setLoans(loansData)
-      setBooks(booksData.filter(b => b.availableQuantity > 0))
-      setReaders(readersData.filter(r => r.status === 'ACTIVE'))
+
+      // Only Admin/Librarian can access these endpoints
+      if (!isReader) {
+        const [booksData, readersData] = await Promise.all([
+          api.get('/books'),
+          api.get('/readers')
+        ])
+        setBooks(booksData.filter(b => b.availableQuantity > 0))
+        setReaders(readersData.filter(r => r.status === 'ACTIVE'))
+      }
     } catch (err) {
       console.error(err)
     } finally {
@@ -92,13 +98,15 @@ export default function LoansPage() {
     <DashboardLayout
       title="Empréstimos"
       actions={
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Novo Empréstimo
-        </button>
+        !isReader && (
+          <button className="btn btn-primary" onClick={() => setShowModal(true)}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Novo Empréstimo
+          </button>
+        )
       }
     >
       <div className="toolbar">
@@ -164,13 +172,13 @@ export default function LoansPage() {
                   <td>{new Date(loan.dueDate).toLocaleDateString()}</td>
                   <td><span className={getStatusBadgeClass(loan.status)}>{getStatusLabel(loan.status)}</span></td>
                   <td>
-                    {loan.status !== 'RETURNED' ? (
+                    {!isReader && loan.status !== 'RETURNED' ? (
                       <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#dcfce7', color: '#166534', fontSize: '0.8rem' }} onClick={() => handleReturn(loan.id)}>
                         Devolver
                       </button>
-                    ) : (
+                    ) : loan.status === 'RETURNED' ? (
                       <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Concluído</span>
-                    )}
+                    ) : null}
                   </td>
                 </tr>
               ))}

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { verifyToken, isLibrarianOrAdmin } from '../middleware/auth.js'
 import {
   listLoans,
   getLoan,
@@ -9,6 +10,9 @@ import {
 } from '../controllers/loan.controller.js'
 
 const router = Router()
+
+// All loan routes require authentication
+router.use(verifyToken)
 
 /**
  * @swagger
@@ -99,7 +103,7 @@ router.get('/:id', asyncHandler(getLoan))
  *       404:
  *         description: Leitor ou livro não encontrado
  */
-router.post('/', asyncHandler(createLoan))
+router.post('/', isLibrarianOrAdmin, asyncHandler(createLoan))
 
 /**
  * @swagger
@@ -123,7 +127,7 @@ router.post('/', asyncHandler(createLoan))
  *       404:
  *         description: Empréstimo não encontrado
  */
-router.patch('/:id/return', asyncHandler(returnLoan))
+router.patch('/:id/return', isLibrarianOrAdmin, asyncHandler(returnLoan))
 
 /**
  * @swagger
@@ -142,6 +146,6 @@ router.patch('/:id/return', asyncHandler(returnLoan))
  *       404:
  *         description: Empréstimo não encontrado
  */
-router.delete('/:id', asyncHandler(deleteLoan))
+router.delete('/:id', isLibrarianOrAdmin, asyncHandler(deleteLoan))
 
 export default router

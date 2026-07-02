@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { verifyToken, isAdmin } from '../middleware/auth.js'
 import {
   listUsers,
   getUser,
@@ -10,6 +11,10 @@ import {
 } from '../controllers/user.controller.js'
 
 const router = Router()
+
+// All user management routes require authentication + Admin role
+router.use(verifyToken)
+router.use(isAdmin)
 
 /**
  * @swagger

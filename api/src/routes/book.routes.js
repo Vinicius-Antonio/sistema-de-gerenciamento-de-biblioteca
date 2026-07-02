@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { verifyToken, isLibrarianOrAdmin, isAdmin } from '../middleware/auth.js'
 import {
   listBooks,
   getBook,
@@ -9,6 +10,9 @@ import {
 } from '../controllers/book.controller.js'
 
 const router = Router()
+
+// All book routes require authentication
+router.use(verifyToken)
 
 /**
  * @swagger
@@ -95,7 +99,7 @@ router.get('/:id', asyncHandler(getBook))
  *           application/json:
  *             schema: { $ref: '#/components/schemas/Error' }
  */
-router.post('/', asyncHandler(createBook))
+router.post('/', isLibrarianOrAdmin, asyncHandler(createBook))
 
 /**
  * @swagger
@@ -122,7 +126,7 @@ router.post('/', asyncHandler(createBook))
  *       404:
  *         description: Livro não encontrado
  */
-router.put('/:id', asyncHandler(updateBook))
+router.put('/:id', isLibrarianOrAdmin, asyncHandler(updateBook))
 
 /**
  * @swagger
@@ -141,6 +145,6 @@ router.put('/:id', asyncHandler(updateBook))
  *       404:
  *         description: Livro não encontrado
  */
-router.delete('/:id', asyncHandler(deleteBook))
+router.delete('/:id', isAdmin, asyncHandler(deleteBook))
 
 export default router

@@ -1,5 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
+import { verifyToken, isLibrarianOrAdmin, isAdmin } from '../middleware/auth.js'
 import {
   listReaders,
   getReader,
@@ -9,6 +10,10 @@ import {
 } from '../controllers/reader.controller.js'
 
 const router = Router()
+
+// All reader routes require authentication + Admin or Librarian role
+router.use(verifyToken)
+router.use(isLibrarianOrAdmin)
 
 /**
  * @swagger
@@ -130,6 +135,6 @@ router.put('/:id', asyncHandler(updateReader))
  *       404:
  *         description: Leitor não encontrado
  */
-router.delete('/:id', asyncHandler(deleteReader))
+router.delete('/:id', isAdmin, asyncHandler(deleteReader))
 
 export default router

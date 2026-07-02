@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import './LandingPage.css'
 
 const features = [
@@ -54,6 +55,11 @@ const features = [
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard/books" replace />
+  }
 
   return (
     <div className="landing">

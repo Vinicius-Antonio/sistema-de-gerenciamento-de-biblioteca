@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './BooksPage.css'
 
@@ -19,7 +20,10 @@ function getColor(id) {
   return colors[(id || 0) % colors.length]
 }
 
+const emptyBook = { title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 }
+
 export default function BooksPage() {
+  const { isReader } = useAuth()
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todas')
   const [availability, setAvailability] = useState('Todas')
@@ -28,7 +32,8 @@ export default function BooksPage() {
   const [loading, setLoading] = useState(true)
   
   const [showModal, setShowModal] = useState(false)
-  const [newBook, setNewBook] = useState({ title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 })
+  const [editingBook, setEditingBook] = useState(null)
+  const [form, setForm] = useState(emptyBook)
 
   const fetchBooks = async () => {
     try {
@@ -46,13 +51,36 @@ export default function BooksPage() {
     fetchBooks()
   }, [])
 
-  const handleCreate = async (e) => {
+  const openCreate = () => {
+    setEditingBook(null)
+    setForm(emptyBook)
+    setShowModal(true)
+  }
+
+  const openEdit = (book) => {
+    setEditingBook(book)
+    setForm({
+      title: book.title,
+      author: book.author,
+      publisher: book.publisher || 'Desconhecida',
+      publicationYear: book.publicationYear || 2024,
+      category: book.category || 'Ficção',
+      isbn: book.isbn || '',
+      totalQuantity: book.totalQuantity || 1,
+    })
+    setShowModal(true)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      await api.post('/books', newBook)
+      if (editingBook) {
+        await api.put(`/books/${editingBook.id}`, form)
+      } else {
+        await api.post('/books', form)
+      }
       setShowModal(false)
       fetchBooks()
-      setNewBook({ title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 })
     } catch (err) {
       alert(err.message)
     }
@@ -80,13 +108,15 @@ export default function BooksPage() {
     <DashboardLayout
       title="Acervo"
       actions={
-        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
-          Novo Livro
-        </button>
+        !isReader && (
+          <button className="btn btn-primary" onClick={openCreate}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Novo Livro
+          </button>
+        )
       }
     >
       <div className="toolbar">
@@ -144,7 +174,12 @@ export default function BooksPage() {
                 <p className="acervo-author">{book.author}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
                   <span className={getStatusBadgeClass(book.status)}>{book.status === 'AVAILABLE' ? 'Disponível' : 'Indisponível'}</span>
-                  <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
+                  {!isReader && (
+                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: 'rgba(14,165,233,0.1)', color: '#0284c7' }} onClick={() => openEdit(book)}>Editar</button>
+                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -153,19 +188,31 @@ export default function BooksPage() {
       )}
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-          <div className="card" style={{ width: '400px', maxWidth: '90%', padding: '2rem' }}>
-            <h3 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Novo Livro</h3>
-            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <input required className="input-field" placeholder="Título" value={newBook.title} onChange={e => setNewBook({...newBook, title: e.target.value})} />
-              <input required className="input-field" placeholder="Autor" value={newBook.author} onChange={e => setNewBook({...newBook, author: e.target.value})} />
-              <select className="input-field" value={newBook.category} onChange={e => setNewBook({...newBook, category: e.target.value})}>
-                {categories.filter(c => c !== 'Todas').map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              <input type="number" required className="input-field" placeholder="Quantidade" value={newBook.totalQuantity} onChange={e => setNewBook({...newBook, totalQuantity: parseInt(e.target.value)})} />
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="button" className="btn" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Salvar</button>
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false) }}>
+          <div className="card modal-card">
+            <h3 className="modal-title">{editingBook ? 'Editar Livro' : 'Novo Livro'}</h3>
+            <form className="modal-form" onSubmit={handleSubmit}>
+              <div>
+                <label htmlFor="book-title">Título</label>
+                <input id="book-title" required className="input-field" placeholder="Título" value={form.title} onChange={e => setForm({...form, title: e.target.value})} />
+              </div>
+              <div>
+                <label htmlFor="book-author">Autor</label>
+                <input id="book-author" required className="input-field" placeholder="Autor" value={form.author} onChange={e => setForm({...form, author: e.target.value})} />
+              </div>
+              <div>
+                <label htmlFor="book-category">Categoria</label>
+                <select id="book-category" className="input-field" value={form.category} onChange={e => setForm({...form, category: e.target.value})}>
+                  {categories.filter(c => c !== 'Todas').map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="book-qty">Quantidade Total</label>
+                <input id="book-qty" type="number" required className="input-field" placeholder="Quantidade" value={form.totalQuantity} onChange={e => setForm({...form, totalQuantity: parseInt(e.target.value)})} />
+              </div>
+              <div className="modal-actions">
+                <button type="button" className="btn" onClick={() => setShowModal(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary">{editingBook ? 'Salvar' : 'Criar Livro'}</button>
               </div>
             </form>
           </div>
@@ -174,4 +221,3 @@ export default function BooksPage() {
     </DashboardLayout>
   )
 }
-

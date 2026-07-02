@@ -9,6 +9,7 @@ import ReadersPage from './pages/ReadersPage'
 import LoansPage from './pages/LoansPage'
 import ReportsPage from './pages/ReportsPage'
 import SettingsPage from './pages/SettingsPage'
+import UsersPage from './pages/UsersPage'
 
 export default function App() {
   return (
@@ -56,6 +57,14 @@ export default function App() {
         />
 
         {/* Rotas protegidas - apenas Admin */}
+        <Route
+          path="/dashboard/users"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <UsersPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/dashboard/settings"
           element={

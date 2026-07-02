@@ -26,6 +26,13 @@ export async function listLoans(req, res) {
   if (readerId) where.readerId = readerId
   if (bookId) where.bookId = bookId
 
+  // Readers can only see their own loans
+  if (req.userRole === 'READER') {
+    const reader = await Reader.findOne({ where: { userId: req.userId } })
+    if (!reader) return res.json([])
+    where.readerId = reader.id
+  }
+
 
   if (startDate || endDate) {
     where.loanDate = {}
