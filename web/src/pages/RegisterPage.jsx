@@ -1,25 +1,72 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import './RegisterPage.css'
 
 export default function RegisterPage() {
   const navigate = useNavigate()
+  const { register, isAuthenticated } = useAuth()
   const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'Bibliotecário',
+    role: 'READER',
+    documentId: '',
+    phone: '',
+    address: '',
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+
+  if (isAuthenticated) {
+    navigate('/dashboard/books', { replace: true })
+    return null
+  }
 
   const handleChange = (field) => (e) => {
     setForm({ ...form, [field]: e.target.value })
+    if (error) setError('')
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/dashboard/books')
+    setError('')
+
+    if (form.password !== form.confirmPassword) {
+      setError('As senhas não coincidem.')
+      return
+    }
+
+    if (form.password.length < 6) {
+      setError('A senha deve ter no mínimo 6 caracteres.')
+      return
+    }
+
+    if (form.role === 'READER' && !form.documentId.trim()) {
+      setError('CPF ou RA é obrigatório para leitores.')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      await register({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        role: form.role,
+        documentId: form.documentId,
+        phone: form.phone,
+        address: form.address,
+      })
+      navigate('/dashboard/books')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -64,6 +111,17 @@ export default function RegisterPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="cadastro-error animate-in">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
           <form className="cadastro-form" onSubmit={handleSubmit}>
             <div className="cadastro-field">
               <label htmlFor="cad-nome" className="cadastro-label">Nome Completo</label>
@@ -80,6 +138,8 @@ export default function RegisterPage() {
                   value={form.name}
                   onChange={handleChange('name')}
                   autoComplete="name"
+                  required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -99,9 +159,89 @@ export default function RegisterPage() {
                   value={form.email}
                   onChange={handleChange('email')}
                   autoComplete="email"
+                  required
+                  disabled={isLoading}
                 />
               </div>
             </div>
+
+            <div className="cadastro-field">
+              <label htmlFor="cad-cargo" className="cadastro-label">Perfil</label>
+              <select
+                id="cad-cargo"
+                className="input-field"
+                value={form.role}
+                onChange={handleChange('role')}
+                disabled={isLoading}
+              >
+                <option value="READER">Leitor / Aluno</option>
+                <option value="LIBRARIAN">Bibliotecário</option>
+                <option value="ADMIN">Administrador</option>
+              </select>
+            </div>
+
+            {form.role === 'READER' && (
+              <div className="cadastro-field animate-in">
+                <label htmlFor="cad-document" className="cadastro-label">CPF ou RA</label>
+                <div className="cadastro-input-wrapper">
+                  <svg className="cadastro-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="18" rx="2"/>
+                    <line x1="6" y1="8" x2="18" y2="8"/>
+                    <line x1="6" y1="12" x2="14" y2="12"/>
+                    <line x1="6" y1="16" x2="10" y2="16"/>
+                  </svg>
+                  <input
+                    id="cad-document"
+                    type="text"
+                    className="input-field"
+                    placeholder="000.000.000-00 ou RA12345"
+                    value={form.documentId}
+                    onChange={handleChange('documentId')}
+                    disabled={isLoading}
+                  />
+                </div>
+              </div>
+            )}
+
+            {form.role === 'READER' && (
+              <div className="cadastro-row animate-in">
+                <div className="cadastro-field">
+                  <label htmlFor="cad-phone" className="cadastro-label">Telefone</label>
+                  <div className="cadastro-input-wrapper">
+                    <svg className="cadastro-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72"/>
+                    </svg>
+                    <input
+                      id="cad-phone"
+                      type="text"
+                      className="input-field"
+                      placeholder="(11) 99999-8888"
+                      value={form.phone}
+                      onChange={handleChange('phone')}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+                <div className="cadastro-field">
+                  <label htmlFor="cad-address" className="cadastro-label">Endereço</label>
+                  <div className="cadastro-input-wrapper">
+                    <svg className="cadastro-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                      <circle cx="12" cy="10" r="3"/>
+                    </svg>
+                    <input
+                      id="cad-address"
+                      type="text"
+                      className="input-field"
+                      placeholder="Rua Exemplo, 100"
+                      value={form.address}
+                      onChange={handleChange('address')}
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="cadastro-row">
               <div className="cadastro-field">
@@ -115,10 +255,12 @@ export default function RegisterPage() {
                     id="cad-senha"
                     type={showPassword ? 'text' : 'password'}
                     className="input-field"
-                    placeholder="••••••••"
+                    placeholder="Mín. 6 caracteres"
                     value={form.password}
                     onChange={handleChange('password')}
                     autoComplete="new-password"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
@@ -134,37 +276,36 @@ export default function RegisterPage() {
                     id="cad-confirmar"
                     type={showPassword ? 'text' : 'password'}
                     className="input-field"
-                    placeholder="••••••••"
+                    placeholder="Repita a senha"
                     value={form.confirmPassword}
                     onChange={handleChange('confirmPassword')}
                     autoComplete="new-password"
+                    required
+                    disabled={isLoading}
                   />
                 </div>
               </div>
             </div>
 
-            <div className="cadastro-field">
-              <label htmlFor="cad-cargo" className="cadastro-label">Cargo</label>
-              <select
-                id="cad-cargo"
-                className="input-field"
-                value={form.role}
-                onChange={handleChange('role')}
-              >
-                <option value="Bibliotecário">Bibliotecário</option>
-                <option value="Auxiliar">Auxiliar de Biblioteca</option>
-                <option value="Administrador">Administrador</option>
-              </select>
-            </div>
-
             <label className="cadastro-checkbox">
-              <input type="checkbox" defaultChecked />
+              <input type="checkbox" required defaultChecked />
               <span>Li e concordo com os <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a></span>
             </label>
 
             <div className="cadastro-actions">
-              <button type="submit" className="btn btn-primary btn-lg cadastro-submit">
-                Criar Conta
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg cadastro-submit"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="cadastro-btn-spinner"></span>
+                    Criando conta...
+                  </>
+                ) : (
+                  'Criar Conta'
+                )}
               </button>
               <p className="cadastro-login-link">
                 Já tem uma conta? <Link to="/login">Fazer Login</Link>

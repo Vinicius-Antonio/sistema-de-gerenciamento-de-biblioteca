@@ -1,10 +1,12 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import './Sidebar.css'
 
-const navItems = [
+const allNavItems = [
   {
     path: '/dashboard/books',
     label: 'Acervo',
+    roles: ['ADMIN', 'LIBRARIAN', 'READER'],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
@@ -17,6 +19,7 @@ const navItems = [
   {
     path: '/dashboard/readers',
     label: 'Leitores',
+    roles: ['ADMIN', 'LIBRARIAN'],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -29,6 +32,7 @@ const navItems = [
   {
     path: '/dashboard/loans',
     label: 'Empréstimos',
+    roles: ['ADMIN', 'LIBRARIAN', 'READER'],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="17 1 21 5 17 9"/>
@@ -41,6 +45,7 @@ const navItems = [
   {
     path: '/dashboard/reports',
     label: 'Relatórios',
+    roles: ['ADMIN', 'LIBRARIAN'],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="20" x2="18" y2="10"/>
@@ -53,6 +58,7 @@ const navItems = [
   {
     path: '/dashboard/settings',
     label: 'Configurações',
+    roles: ['ADMIN'],
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3"/>
@@ -63,7 +69,17 @@ const navItems = [
 ]
 
 export default function Sidebar() {
-  const location = useLocation()
+  const { user, logout, getRoleLabel } = useAuth()
+  const navigate = useNavigate()
+
+  const navItems = allNavItems.filter(
+    (item) => !item.roles || item.roles.includes(user?.role)
+  )
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <aside className="sidebar" role="navigation" aria-label="Navegação principal">
@@ -110,9 +126,21 @@ export default function Sidebar() {
             </svg>
           </div>
           <div className="sidebar-user-info">
-            <span className="sidebar-user-name">Administrador</span>
-            <span className="sidebar-user-role">Bibliotecário</span>
+            <span className="sidebar-user-name">{user?.name || 'Usuário'}</span>
+            <span className="sidebar-user-role">{getRoleLabel(user?.role)}</span>
           </div>
+          <button
+            className="sidebar-logout-btn"
+            onClick={handleLogout}
+            title="Sair do sistema"
+            aria-label="Sair do sistema"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
         </div>
       </div>
     </aside>

@@ -1,16 +1,35 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import './LoginPage.css'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const { login, isAuthenticated } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  if (isAuthenticated) {
+    navigate('/dashboard/books', { replace: true })
+    return null
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    navigate('/dashboard/books')
+    setError('')
+    setIsLoading(true)
+
+    try {
+      await login(email, password)
+      navigate('/dashboard/books')
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -61,6 +80,17 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {error && (
+            <div className="login-error animate-in">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="15" y1="9" x2="9" y2="15"/>
+                <line x1="9" y1="9" x2="15" y2="15"/>
+              </svg>
+              <span>{error}</span>
+            </div>
+          )}
+
           <form className="login-form" onSubmit={handleSubmit}>
             <div className="login-field">
               <label htmlFor="login-email" className="login-label">E-mail</label>
@@ -77,6 +107,8 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   autoComplete="email"
+                  required
+                  disabled={isLoading}
                 />
               </div>
             </div>
@@ -96,6 +128,8 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   autoComplete="current-password"
+                  required
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -120,15 +154,55 @@ export default function LoginPage() {
             </div>
 
             <div className="login-actions">
-              <button type="submit" className="btn btn-primary btn-lg login-submit">
-                Entrar
+              <button
+                type="submit"
+                className="btn btn-primary btn-lg login-submit"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <span className="login-btn-spinner"></span>
+                    Entrando...
+                  </>
+                ) : (
+                  'Entrar'
+                )}
               </button>
-              <a href="#" className="login-forgot">Esqueci minha senha</a>
               <p className="login-register-link">
                 Não tem uma conta? <Link to="/cadastro">Criar conta</Link>
               </p>
             </div>
           </form>
+
+          <div className="login-demo-accounts">
+            <p className="login-demo-title">Contas de demonstração:</p>
+            <div className="login-demo-grid">
+              <button
+                type="button"
+                className="login-demo-btn"
+                onClick={() => { setEmail('admin@biblioteca.com'); setPassword('senha123') }}
+              >
+                <span className="login-demo-role">Admin</span>
+                <span className="login-demo-email">admin@biblioteca.com</span>
+              </button>
+              <button
+                type="button"
+                className="login-demo-btn"
+                onClick={() => { setEmail('librarian@biblioteca.com'); setPassword('senha123') }}
+              >
+                <span className="login-demo-role">Bibliotecário</span>
+                <span className="login-demo-email">librarian@biblioteca.com</span>
+              </button>
+              <button
+                type="button"
+                className="login-demo-btn"
+                onClick={() => { setEmail('dosia@example.com'); setPassword('senha123') }}
+              >
+                <span className="login-demo-role">Leitor</span>
+                <span className="login-demo-email">dosia@example.com</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

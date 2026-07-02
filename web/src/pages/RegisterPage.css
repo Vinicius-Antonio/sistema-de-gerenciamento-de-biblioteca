@@ -226,6 +226,41 @@
   font-weight: 600;
 }
 
+/* --- Error Message --- */
+.cadastro-error {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--coral-light);
+  border: 1px solid rgba(230, 57, 70, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--coral);
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: var(--space-2);
+}
+
+/* --- Loading Spinner --- */
+.cadastro-btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: cadSpin 0.6s linear infinite;
+}
+
+@keyframes cadSpin {
+  to { transform: rotate(360deg); }
+}
+
+.cadastro-submit:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 /* --- Responsive --- */
 @media (max-width: 900px) {
   .cadastro {
@@ -241,3 +276,4 @@
     grid-template-columns: 1fr;
   }
 }
+

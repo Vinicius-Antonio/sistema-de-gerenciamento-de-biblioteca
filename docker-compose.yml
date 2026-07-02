@@ -41,6 +41,7 @@ services:
       DB_USER: biblioteca_user
       DB_PASSWORD: biblioteca_pass
       DB_NAME: biblioteca
+      JWT_SECRET: biblioteca-jwt-secret-key-2026
       PORT: 3000
     depends_on:
       db:

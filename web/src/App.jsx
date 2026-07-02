@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import ProtectedRoute from './components/ProtectedRoute'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
@@ -10,17 +12,63 @@ import SettingsPage from './pages/SettingsPage'
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/cadastro" element={<RegisterPage />} />
-      <Route path="/dashboard/books" element={<BooksPage />} />
-      <Route path="/dashboard/readers" element={<ReadersPage />} />
-      <Route path="/dashboard/loans" element={<LoansPage />} />
-      <Route path="/dashboard/reports" element={<ReportsPage />} />
-      <Route path="/dashboard/settings" element={<SettingsPage />} />
-      <Route path="/dashboard" element={<Navigate to="/dashboard/books" replace />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <AuthProvider>
+      <Routes>
+        {/* Rotas públicas */}
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/cadastro" element={<RegisterPage />} />
+
+        {/* Rotas protegidas - acessíveis a todos os usuários autenticados */}
+        <Route
+          path="/dashboard/books"
+          element={
+            <ProtectedRoute>
+              <BooksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/loans"
+          element={
+            <ProtectedRoute>
+              <LoansPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rotas protegidas - apenas Admin e Bibliotecário */}
+        <Route
+          path="/dashboard/readers"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'LIBRARIAN']}>
+              <ReadersPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard/reports"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'LIBRARIAN']}>
+              <ReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Rotas protegidas - apenas Admin */}
+        <Route
+          path="/dashboard/settings"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <SettingsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirect */}
+        <Route path="/dashboard" element={<Navigate to="/dashboard/books" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AuthProvider>
   )
 }

@@ -149,17 +149,63 @@
   flex-direction: column;
   line-height: 1.3;
   min-width: 0;
+  flex: 1;
 }
 
 .sidebar-user-name {
   font-size: 0.85rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar-user-role {
   font-size: 0.72rem;
   color: rgba(255, 255, 255, 0.4);
+}
+
+.sidebar-logout-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all var(--duration-fast) ease;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(230, 57, 70, 0.2);
+  color: var(--coral);
+}
+
+/* --- Loading State --- */
+.protected-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+.protected-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--teal);
+  border-radius: 50%;
+  animation: protectedSpin 0.7s linear infinite;
+}
+
+@keyframes protectedSpin {
+  to { transform: rotate(360deg); }
 }
 
 /* --- Responsive: hide sidebar on mobile (could add hamburger later) --- */
@@ -168,3 +214,4 @@
     display: none;
   }
 }
+
