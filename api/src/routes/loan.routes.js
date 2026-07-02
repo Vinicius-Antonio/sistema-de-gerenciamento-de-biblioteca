@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { asyncHandler } from '../middlewares/asyncHandler.js'
-import { verifyToken, isLibrarianOrAdmin } from '../middleware/auth.js'
+import { verifyToken, isLibrarianOrAdmin } from '../middlewares/auth.js'
 import {
   listLoans,
   getLoan,
@@ -11,7 +11,6 @@ import {
 
 const router = Router()
 
-// All loan routes require authentication
 router.use(verifyToken)
 
 /**
@@ -25,7 +24,7 @@ router.use(verifyToken)
  * @swagger
  * /loans:
  *   get:
- *     summary: Lista empréstimos (com filtros). Atualiza automaticamente empréstimos vencidos para "LATE".
+ *     summary: Lista empréstimos (com filtros). Leitores só veem os próprios empréstimos. Atualiza automaticamente empréstimos vencidos para "LATE".
  *     tags: [Empréstimos]
  *     parameters:
  *       - in: query
@@ -83,6 +82,11 @@ router.get('/:id', asyncHandler(getLoan))
  * /loans:
  *   post:
  *     summary: Registra um novo empréstimo (diminui a quantidade disponível do livro)
+ *     description: >
+ *       Bibliotecários e administradores podem registrar empréstimos para qualquer leitor
+ *       informando readerId. Leitores autenticados também podem usar esta rota para pegar
+ *       um livro emprestado para si mesmos — nesse caso o readerId enviado é ignorado e o
+ *       sistema usa automaticamente o leitor vinculado à conta autenticada.
  *     tags: [Empréstimos]
  *     requestBody:
  *       required: true
@@ -103,7 +107,7 @@ router.get('/:id', asyncHandler(getLoan))
  *       404:
  *         description: Leitor ou livro não encontrado
  */
-router.post('/', isLibrarianOrAdmin, asyncHandler(createLoan))
+router.post('/', asyncHandler(createLoan))
 
 /**
  * @swagger

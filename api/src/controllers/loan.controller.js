@@ -3,7 +3,6 @@ import { Loan, Book, Reader } from '../models/index.js'
 import { HttpError } from '../middlewares/errorHandler.js'
 import { sequelize } from '../models/index.js'
 
-
 async function syncOverdueLoans() {
   await Loan.update(
     { status: 'LATE' },
@@ -26,13 +25,11 @@ export async function listLoans(req, res) {
   if (readerId) where.readerId = readerId
   if (bookId) where.bookId = bookId
 
-  // Readers can only see their own loans
   if (req.userRole === 'READER') {
     const reader = await Reader.findOne({ where: { userId: req.userId } })
     if (!reader) return res.json([])
     where.readerId = reader.id
   }
-
 
   if (startDate || endDate) {
     where.loanDate = {}
@@ -51,7 +48,6 @@ export async function listLoans(req, res) {
   res.json(loans)
 }
 
-
 export async function getLoan(req, res) {
   await syncOverdueLoans()
 
@@ -62,12 +58,28 @@ export async function getLoan(req, res) {
     ],
   })
   if (!loan) throw new HttpError(404, 'Empréstimo não encontrado')
+
+  if (req.userRole === 'READER') {
+    const reader = await Reader.findOne({ where: { userId: req.userId } })
+    if (!reader || loan.readerId !== reader.id) {
+      throw new HttpError(403, 'Você só pode visualizar seus próprios empréstimos')
+    }
+  }
+
   res.json(loan)
 }
 
-
 export async function createLoan(req, res) {
-  const { readerId, bookId, dueDate } = req.body
+  const { bookId, dueDate } = req.body
+  let { readerId } = req.body
+
+  if (req.userRole === 'READER') {
+    const myReader = await Reader.findOne({ where: { userId: req.userId } })
+    if (!myReader) {
+      throw new HttpError(404, 'Nenhum cadastro de leitor foi encontrado para este usuário')
+    }
+    readerId = myReader.id
+  }
 
   if (!readerId || !bookId || !dueDate) {
     throw new HttpError(400, 'readerId, bookId e dueDate são obrigatórios')
@@ -77,7 +89,6 @@ export async function createLoan(req, res) {
     const reader = await Reader.findByPk(readerId, { transaction: t })
     if (!reader) throw new HttpError(404, 'Leitor não encontrado')
     if (reader.status !== 'ACTIVE') throw new HttpError(400, 'Leitor está inativo')
-
 
     const book = await Book.findByPk(bookId, { transaction: t, lock: t.LOCK.UPDATE })
     if (!book) throw new HttpError(404, 'Livro não encontrado')
@@ -101,8 +112,6 @@ export async function createLoan(req, res) {
 
   res.status(201).json(loan)
 }
-
-
 
 export async function returnLoan(req, res) {
   const loan = await sequelize.transaction(async (t) => {
@@ -128,7 +137,6 @@ export async function returnLoan(req, res) {
 
   res.json(loan)
 }
-
 
 export async function deleteLoan(req, res) {
   const loan = await Loan.findByPk(req.params.id)

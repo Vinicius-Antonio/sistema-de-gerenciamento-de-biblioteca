@@ -2,7 +2,6 @@ import { Op } from 'sequelize'
 import { Reader } from '../models/index.js'
 import { HttpError } from '../middlewares/errorHandler.js'
 
-
 export async function listReaders(req, res) {
   const { search, status } = req.query
 
@@ -20,13 +19,11 @@ export async function listReaders(req, res) {
   res.json(readers)
 }
 
-
 export async function getReader(req, res) {
   const reader = await Reader.findByPk(req.params.id)
   if (!reader) throw new HttpError(404, 'Leitor não encontrado')
   res.json(reader)
 }
-
 
 export async function createReader(req, res) {
   const { userId, name, documentId, email, phone, address } = req.body
@@ -42,7 +39,6 @@ export async function createReader(req, res) {
 
   res.status(201).json(reader)
 }
-
 
 export async function updateReader(req, res) {
   const reader = await Reader.findByPk(req.params.id)
@@ -60,7 +56,6 @@ export async function updateReader(req, res) {
   await reader.save()
   res.json(reader)
 }
-
 
 export async function deleteReader(req, res) {
   const reader = await Reader.findByPk(req.params.id)

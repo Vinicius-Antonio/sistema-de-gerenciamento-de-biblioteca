@@ -2,7 +2,6 @@ import { Op } from 'sequelize'
 import { Book } from '../models/index.js'
 import { HttpError } from '../middlewares/errorHandler.js'
 
-
 export async function listBooks(req, res) {
   const { search, category, status } = req.query
 
@@ -21,13 +20,11 @@ export async function listBooks(req, res) {
   res.json(books)
 }
 
-
 export async function getBook(req, res) {
   const book = await Book.findByPk(req.params.id)
   if (!book) throw new HttpError(404, 'Livro não encontrado')
   res.json(book)
 }
-
 
 export async function createBook(req, res) {
   const { title, author, publisher, publicationYear, category, isbn, totalQuantity } = req.body
@@ -48,8 +45,6 @@ export async function createBook(req, res) {
 
   res.status(201).json(book)
 }
-
-
 
 export async function updateBook(req, res) {
   const book = await Book.findByPk(req.params.id)
@@ -74,8 +69,6 @@ export async function updateBook(req, res) {
   await book.save()
   res.json(book)
 }
-
-
 
 export async function deleteBook(req, res) {
   const book = await Book.findByPk(req.params.id)
