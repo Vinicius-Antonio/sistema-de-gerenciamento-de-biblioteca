@@ -15,12 +15,10 @@ export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        {/* Rotas públicas */}
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/cadastro" element={<RegisterPage />} />
 
-        {/* Rotas protegidas - acessíveis a todos os usuários autenticados */}
         <Route
           path="/dashboard/books"
           element={
@@ -38,7 +36,6 @@ export default function App() {
           }
         />
 
-        {/* Rotas protegidas - apenas Admin e Bibliotecário */}
         <Route
           path="/dashboard/readers"
           element={
@@ -56,7 +53,6 @@ export default function App() {
           }
         />
 
-        {/* Rotas protegidas - apenas Admin */}
         <Route
           path="/dashboard/users"
           element={
@@ -74,7 +70,6 @@ export default function App() {
           }
         />
 
-        {/* Redirect */}
         <Route path="/dashboard" element={<Navigate to="/dashboard/books" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

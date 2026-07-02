@@ -1,34 +1,31 @@
 import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import { useAuth } from '../contexts/AuthContext'
 import { api } from '../services/api'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
+  const { user, getRoleLabel } = useAuth()
+
   const [profile, setProfile] = useState({
     name: '',
     email: '',
     role: '',
     phone: '',
   })
-  
-  const [userId, setUserId] = useState(null)
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user')
-    if (userStr) {
-      const user = JSON.parse(userStr)
-      setUserId(user.id)
-      
-      api.get(`/users/${user.id}`).then(data => {
-        setProfile(prev => ({
-          ...prev,
-          name: data.name || '',
-          email: data.email || '',
-          role: data.role || ''
-        }))
-      }).catch(console.error)
-    }
-  }, [])
+    if (!user) return
+
+    api.get(`/users/${user.id}`).then(data => {
+      setProfile(prev => ({
+        ...prev,
+        name: data.name || '',
+        email: data.email || '',
+        role: data.role || ''
+      }))
+    }).catch(console.error)
+  }, [user])
 
   const [config, setConfig] = useState({
     loanDays: 14,
@@ -46,24 +43,21 @@ export default function SettingsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
-    if (!userId) return
-    
+    if (!user) return
+
     setLoading(true)
     setError(null)
-    
+
     try {
-      await api.put(`/users/${userId}`, {
+      const updated = await api.put(`/users/${user.id}`, {
         name: profile.name,
         email: profile.email,
         role: profile.role
       })
-      
-      const userStr = localStorage.getItem('user')
-      if (userStr) {
-        const user = JSON.parse(userStr)
-        localStorage.setItem('user', JSON.stringify({ ...user, name: profile.name, email: profile.email, role: profile.role }))
-      }
-      
+
+      const storedUser = JSON.parse(localStorage.getItem('biblioteca_user') || '{}')
+      localStorage.setItem('biblioteca_user', JSON.stringify({ ...storedUser, name: updated.name, email: updated.email, role: updated.role }))
+
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch (err) {
@@ -76,7 +70,6 @@ export default function SettingsPage() {
   return (
     <DashboardLayout title="Configurações">
       <div className="config-layout">
-        {/* Profile Section */}
         <section className="card config-section animate-in stagger-1">
           <h3 className="config-section-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -112,8 +105,8 @@ export default function SettingsPage() {
                 id="cfg-cargo"
                 type="text"
                 className="input-field"
-                value={profile.role}
-                onChange={(e) => setProfile({ ...profile, role: e.target.value })}
+                value={getRoleLabel(profile.role)}
+                disabled
               />
             </div>
             <div className="config-field">
@@ -129,7 +122,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Regras de Empréstimo */}
         <section className="card config-section animate-in stagger-2">
           <h3 className="config-section-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -174,7 +166,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Notificações */}
         <section className="card config-section animate-in stagger-3">
           <h3 className="config-section-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -214,7 +205,6 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Ações */}
         <div className="config-actions animate-in stagger-4">
           {error && <div style={{ color: 'red', marginBottom: '1rem' }}>{error}</div>}
           <button className="btn btn-primary btn-lg" onClick={handleSave} disabled={loading}>

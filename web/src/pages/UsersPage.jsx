@@ -17,7 +17,7 @@ const roleBadgeClass = {
 
 const roleFilters = ['Todos', 'ADMIN', 'LIBRARIAN', 'READER']
 
-const emptyForm = { name: '', email: '', password: '', role: 'READER' }
+const emptyForm = { name: '', email: '', password: '', role: 'READER', documentId: '', phone: '', address: '' }
 
 export default function UsersPage() {
   const [search, setSearch] = useState('')
@@ -53,7 +53,7 @@ export default function UsersPage() {
 
   const openEdit = (user) => {
     setEditingUser(user)
-    setForm({ name: user.name, email: user.email, password: '', role: user.role })
+    setForm({ ...emptyForm, name: user.name, email: user.email, role: user.role })
     setShowModal(true)
   }
 
@@ -252,6 +252,43 @@ export default function UsersPage() {
                   <option value="READER">Leitor</option>
                 </select>
               </div>
+
+              {!editingUser && form.role === 'READER' && (
+                <>
+                  <div>
+                    <label htmlFor="user-document">CPF ou RA</label>
+                    <input
+                      id="user-document"
+                      required
+                      className="input-field"
+                      placeholder="000.000.000-00 ou RA12345"
+                      value={form.documentId}
+                      onChange={(e) => setForm({ ...form, documentId: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="user-phone">Telefone</label>
+                    <input
+                      id="user-phone"
+                      className="input-field"
+                      placeholder="(11) 99999-8888"
+                      value={form.phone}
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="user-address">Endereço</label>
+                    <input
+                      id="user-address"
+                      className="input-field"
+                      placeholder="Rua Exemplo, 100"
+                      value={form.address}
+                      onChange={(e) => setForm({ ...form, address: e.target.value })}
+                    />
+                  </div>
+                </>
+              )}
+
               <div className="modal-actions">
                 <button type="button" className="btn" onClick={() => setShowModal(false)}>Cancelar</button>
                 <button type="submit" className="btn btn-primary">

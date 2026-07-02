@@ -7,6 +7,11 @@ import './BooksPage.css'
 const categories = ['Todas', 'Romance', 'Ficção', 'Fantasia', 'Literatura Brasileira', 'Sociologia', 'Direito', 'História', 'Ciências']
 const availabilities = ['Todas', 'AVAILABLE', 'UNAVAILABLE']
 
+const statusLabels = {
+  AVAILABLE: 'Disponível',
+  UNAVAILABLE: 'Indisponível',
+}
+
 function getStatusBadgeClass(status) {
   switch (status) {
     case 'AVAILABLE': return 'badge badge-available'
@@ -20,6 +25,12 @@ function getColor(id) {
   return colors[(id || 0) % colors.length]
 }
 
+function defaultDueDate() {
+  const date = new Date()
+  date.setDate(date.getDate() + 14)
+  return date.toISOString()
+}
+
 const emptyBook = { title: '', author: '', publisher: 'Desconhecida', publicationYear: 2024, category: 'Ficção', isbn: '', totalQuantity: 1 }
 
 export default function BooksPage() {
@@ -27,13 +38,16 @@ export default function BooksPage() {
   const [search, setSearch] = useState('')
   const [category, setCategory] = useState('Todas')
   const [availability, setAvailability] = useState('Todas')
-  
+
   const [books, setBooks] = useState([])
   const [loading, setLoading] = useState(true)
-  
+
   const [showModal, setShowModal] = useState(false)
   const [editingBook, setEditingBook] = useState(null)
   const [form, setForm] = useState(emptyBook)
+
+  const [borrowingId, setBorrowingId] = useState(null)
+  const [feedback, setFeedback] = useState(null)
 
   const fetchBooks = async () => {
     try {
@@ -96,6 +110,20 @@ export default function BooksPage() {
     }
   }
 
+  const handleBorrow = async (book) => {
+    setFeedback(null)
+    setBorrowingId(book.id)
+    try {
+      await api.post('/loans', { bookId: book.id, dueDate: defaultDueDate() })
+      setFeedback({ type: 'success', message: `"${book.title}" emprestado com sucesso! Prazo de devolução: 14 dias.` })
+      fetchBooks()
+    } catch (err) {
+      setFeedback({ type: 'error', message: err.message })
+    } finally {
+      setBorrowingId(null)
+    }
+  }
+
   const filteredBooks = books.filter((book) => {
     const matchSearch = book.title.toLowerCase().includes(search.toLowerCase()) ||
       book.author.toLowerCase().includes(search.toLowerCase())
@@ -148,10 +176,16 @@ export default function BooksPage() {
           onChange={(e) => setAvailability(e.target.value)}
         >
           {availabilities.map((d) => (
-            <option key={d} value={d}>{d === 'Todas' ? 'Disponibilidade' : d}</option>
+            <option key={d} value={d}>{d === 'Todas' ? 'Disponibilidade' : statusLabels[d]}</option>
           ))}
         </select>
       </div>
+
+      {feedback && (
+        <div className={feedback.type === 'success' ? 'acervo-feedback acervo-feedback--success' : 'acervo-feedback acervo-feedback--error'}>
+          {feedback.message}
+        </div>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: '2rem' }}>Carregando livros...</div>
@@ -173,14 +207,27 @@ export default function BooksPage() {
                 <h4 className="acervo-title">{book.title}</h4>
                 <p className="acervo-author">{book.author}</p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.5rem' }}>
-                  <span className={getStatusBadgeClass(book.status)}>{book.status === 'AVAILABLE' ? 'Disponível' : 'Indisponível'}</span>
-                  {!isReader && (
-                    <div style={{ display: 'flex', gap: '0.35rem' }}>
-                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: 'rgba(14,165,233,0.1)', color: '#0284c7' }} onClick={() => openEdit(book)}>Editar</button>
-                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
-                    </div>
-                  )}
+                  <span className={getStatusBadgeClass(book.status)}>{statusLabels[book.status] || book.status}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{book.availableQuantity}/{book.totalQuantity}</span>
                 </div>
+
+                {!isReader && (
+                  <div style={{ display: 'flex', gap: '0.35rem', marginTop: '0.6rem' }}>
+                    <button className="btn" style={{ padding: '0.25rem 0.5rem', background: 'rgba(14,165,233,0.1)', color: '#0284c7' }} onClick={() => openEdit(book)}>Editar</button>
+                    <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#fee2e2', color: '#ef4444' }} onClick={() => handleDelete(book.id)}>Excluir</button>
+                  </div>
+                )}
+
+                {isReader && (
+                  <button
+                    className="btn btn-primary"
+                    style={{ width: '100%', justifyContent: 'center', marginTop: '0.6rem', padding: '0.4rem' }}
+                    disabled={book.availableQuantity <= 0 || borrowingId === book.id}
+                    onClick={() => handleBorrow(book)}
+                  >
+                    {borrowingId === book.id ? 'Emprestando...' : book.availableQuantity > 0 ? 'Pegar Emprestado' : 'Indisponível'}
+                  </button>
+                )}
               </div>
             </div>
           ))}
