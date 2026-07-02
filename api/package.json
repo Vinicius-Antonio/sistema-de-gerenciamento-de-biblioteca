@@ -6,7 +6,12 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "migrate": "sequelize-cli db:migrate --options-path sequelize.options.json",
+    "migrate:undo": "sequelize-cli db:migrate:undo:all --options-path sequelize.options.json",
+    "migrate:status": "sequelize-cli db:migrate:status --options-path sequelize.options.json",
+    "seed": "sequelize-cli db:seed:all --options-path sequelize.options.json",
+    "seed:undo": "sequelize-cli db:seed:undo:all --options-path sequelize.options.json"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

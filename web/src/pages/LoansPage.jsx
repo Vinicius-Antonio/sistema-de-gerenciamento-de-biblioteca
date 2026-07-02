@@ -1,37 +1,89 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import DashboardLayout from '../components/DashboardLayout'
+import { api } from '../services/api'
 import './LoansPage.css'
-
-const mockLoans = [
-  { id: 1, reader: 'Loreia Editar', book: 'Otelo', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Em aberto' },
-  { id: 2, reader: 'Marora Tafuora', book: 'Lima', checkoutDate: '25/06/2023', dueDate: '19/01/2023', status: 'Em aberto' },
-  { id: 3, reader: 'Marcos Editar', book: 'Gonzales', checkoutDate: '25/04/2023', dueDate: '03/01/2023', status: 'Em aberto' },
-  { id: 4, reader: 'Biakris Kossin', book: 'Derrudes Optimus', checkoutDate: '25/04/2023', dueDate: '03/01/2023', status: 'Registrar Devolução' },
-  { id: 5, reader: 'Marcos Canara', book: 'Romanta', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
-  { id: 6, reader: 'Lilena Moois', book: 'Derrudes Meteórico', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
-  { id: 7, reader: 'Diana Editar', book: 'Derrudes Kantar', checkoutDate: '25/06/2023', dueDate: '03/01/2023', status: 'Devolvido' },
-]
 
 function getStatusBadgeClass(status) {
   switch (status) {
-    case 'Em aberto': return 'badge badge-open'
-    case 'Devolvido': return 'badge badge-returned'
-    case 'Atrasado': return 'badge badge-late'
-    case 'Registrar Devolução': return 'badge badge-late'
+    case 'OPEN': return 'badge badge-open'
+    case 'RETURNED': return 'badge badge-returned'
+    case 'LATE': return 'badge badge-late'
     default: return 'badge'
+  }
+}
+
+function getStatusLabel(status) {
+  switch (status) {
+    case 'OPEN': return 'Em aberto'
+    case 'RETURNED': return 'Devolvido'
+    case 'LATE': return 'Atrasado'
+    default: return status
   }
 }
 
 export default function LoansPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('Todos')
+  const statuses = ['Todos', 'OPEN', 'RETURNED', 'LATE']
 
-  const statuses = ['Todos', 'Em aberto', 'Devolvido', 'Atrasado', 'Registrar Devolução']
+  const [loans, setLoans] = useState([])
+  const [books, setBooks] = useState([])
+  const [readers, setReaders] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const filteredLoans = mockLoans.filter((loan) => {
+  const [showModal, setShowModal] = useState(false)
+  const [newLoan, setNewLoan] = useState({ readerId: '', bookId: '', dueDate: '' })
+
+  const fetchAll = async () => {
+    try {
+      setLoading(true)
+      const [loansData, booksData, readersData] = await Promise.all([
+        api.get('/loans'),
+        api.get('/books'),
+        api.get('/readers')
+      ])
+      setLoans(loansData)
+      setBooks(booksData.filter(b => b.availableQuantity > 0))
+      setReaders(readersData.filter(r => r.status === 'ACTIVE'))
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchAll()
+  }, [])
+
+  const handleCreate = async (e) => {
+    e.preventDefault()
+    try {
+      await api.post('/loans', newLoan)
+      setShowModal(false)
+      fetchAll()
+      setNewLoan({ readerId: '', bookId: '', dueDate: '' })
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const handleReturn = async (id) => {
+    if (!window.confirm('Confirmar devolução?')) return
+    try {
+      await api.patch(`/loans/${id}/return`)
+      fetchAll()
+    } catch (err) {
+      alert(err.message)
+    }
+  }
+
+  const filteredLoans = loans.filter((loan) => {
+    const readerName = loan.reader?.name || ''
+    const bookTitle = loan.book?.title || ''
     const matchSearch =
-      loan.reader.toLowerCase().includes(search.toLowerCase()) ||
-      loan.book.toLowerCase().includes(search.toLowerCase())
+      readerName.toLowerCase().includes(search.toLowerCase()) ||
+      bookTitle.toLowerCase().includes(search.toLowerCase())
     const matchStatus = statusFilter === 'Todos' || loan.status === statusFilter
     return matchSearch && matchStatus
   })
@@ -40,7 +92,7 @@ export default function LoansPage() {
     <DashboardLayout
       title="Empréstimos"
       actions={
-        <button className="btn btn-primary">
+        <button className="btn btn-primary" onClick={() => setShowModal(true)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <line x1="12" y1="5" x2="12" y2="19"/>
             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -49,7 +101,6 @@ export default function LoansPage() {
         </button>
       }
     >
-      {/* Toolbar */}
       <div className="toolbar">
         <div className="search-wrapper">
           <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -66,64 +117,92 @@ export default function LoansPage() {
         </div>
 
         <div className="emprestimos-filters">
-          <span className="filter-label">Filtros por Status, Datas ou Leitor</span>
           <select
             className="input-field emprestimos-select"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
           >
             {statuses.map((s) => (
-              <option key={s} value={s}>{s === 'Todos' ? 'Status' : s}</option>
+              <option key={s} value={s}>{s === 'Todos' ? 'Status' : getStatusLabel(s)}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Table */}
       <div className="table-wrapper card">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th></th>
-              <th>Leitor</th>
-              <th>Livro</th>
-              <th>Data de Saída</th>
-              <th>Previsão de Volta</th>
-              <th>Status</th>
-              <th>Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredLoans.map((loan, i) => (
-              <tr key={loan.id} className={`animate-in stagger-${i + 1}`}>
-                <td>
-                  <div className="emp-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="17 1 21 5 17 9"/>
-                      <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-                      <polyline points="7 23 3 19 7 15"/>
-                      <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
-                    </svg>
-                  </div>
-                </td>
-                <td className="td-name">{loan.reader}</td>
-                <td>{loan.book}</td>
-                <td>{loan.checkoutDate}</td>
-                <td>{loan.dueDate}</td>
-                <td><span className={getStatusBadgeClass(loan.status)}>{loan.status}</span></td>
-                <td>
-                  <button className="btn-icon" aria-label={`Editar empréstimo de ${loan.reader}`}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                  </button>
-                </td>
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>Carregando empréstimos...</div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Leitor</th>
+                <th>Livro</th>
+                <th>Data de Saída</th>
+                <th>Previsão de Volta</th>
+                <th>Status</th>
+                <th>Ações</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredLoans.map((loan, i) => (
+                <tr key={loan.id} className={`animate-in stagger-${(i % 5) + 1}`}>
+                  <td>
+                    <div className="emp-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="17 1 21 5 17 9"/>
+                        <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                        <polyline points="7 23 3 19 7 15"/>
+                        <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                      </svg>
+                    </div>
+                  </td>
+                  <td className="td-name">{loan.reader?.name}</td>
+                  <td>{loan.book?.title}</td>
+                  <td>{new Date(loan.loanDate).toLocaleDateString()}</td>
+                  <td>{new Date(loan.dueDate).toLocaleDateString()}</td>
+                  <td><span className={getStatusBadgeClass(loan.status)}>{getStatusLabel(loan.status)}</span></td>
+                  <td>
+                    {loan.status !== 'RETURNED' ? (
+                      <button className="btn" style={{ padding: '0.25rem 0.5rem', background: '#dcfce7', color: '#166534', fontSize: '0.8rem' }} onClick={() => handleReturn(loan.id)}>
+                        Devolver
+                      </button>
+                    ) : (
+                      <span style={{ color: '#9ca3af', fontSize: '0.8rem' }}>Concluído</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
+
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
+          <div className="card" style={{ width: '400px', maxWidth: '90%', padding: '2rem' }}>
+            <h3 style={{ marginBottom: '1rem', color: 'var(--navy)' }}>Novo Empréstimo</h3>
+            <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <select required className="input-field" value={newLoan.readerId} onChange={e => setNewLoan({...newLoan, readerId: e.target.value})}>
+                <option value="">Selecione um Leitor...</option>
+                {readers.map(r => <option key={r.id} value={r.id}>{r.name} ({r.documentId})</option>)}
+              </select>
+              <select required className="input-field" value={newLoan.bookId} onChange={e => setNewLoan({...newLoan, bookId: e.target.value})}>
+                <option value="">Selecione um Livro...</option>
+                {books.map(b => <option key={b.id} value={b.id}>{b.title} ({b.availableQuantity} disp.)</option>)}
+              </select>
+              <input type="date" required className="input-field" value={newLoan.dueDate} onChange={e => setNewLoan({...newLoan, dueDate: e.target.value})} />
+              
+              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                <button type="button" className="btn" style={{ flex: 1 }} onClick={() => setShowModal(false)}>Cancelar</button>
+                <button type="submit" className="btn btn-primary" style={{ flex: 1 }}>Salvar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   )
 }
+
